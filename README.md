@@ -13,12 +13,12 @@ COMPAS is a reproducible audit of whether a resume-screening language model chan
 ## Current status
 
 > **Pipeline validation:** Complete  
-> **Name-source screening:** In progress  
-> **Perception pretest:** Not completed  
-> **Live Claude audit:** Not run  
+> **Name-source screening:** Complete  
+> **Perception pretest:** Submitted; not approved  
+> **Live Claude audit:** Blocked; not run  
 > **Human benchmark:** Not run
 
-The repository currently contains completed placebo results and the locked infrastructure for the larger confirmatory study. It does not contain live Claude findings.
+The repository contains completed placebo results, the locked infrastructure for the confirmatory study, and a non-approving perception-pretest outcome. It does not contain live Claude findings.
 
 ## Pipeline validation
 
@@ -46,11 +46,11 @@ Source screening uses:
 
 Census counts and percentages are aggregate statistics and include disclosure-protection adjustments. The research files may contain negative values created by the disclosure-avoidance process. These data do not identify a person or establish anyone's race, ethnicity, gender, nationality, or socioeconomic status.
 
-The public-source registry is populated in [`data/name_validation/name_candidates.csv`](data/name_validation/name_candidates.csv), but no name is approved for the live audit until the separate human perception pretest is complete.
+The public-source registry is populated in [`data/name_validation/name_candidates.csv`](data/name_validation/name_candidates.csv). Source screening is complete, but no name is approved for the live audit until the perception pretest passes every locked rule.
 
 ### Locked perception-pretest rules
 
-Approximately 100 to 200 respondents will rate:
+Approximately 100 to 200 respondents rate:
 
 - perceived race or ethnicity;
 - perceived gender;
@@ -61,13 +61,33 @@ Approximately 100 to 200 respondents will rate:
 
 A name requires at least 100 valid responses, at least 70% intended-group agreement, at least 70% intended-gender agreement, median confidence of at least 4/5, and no major between-group imbalance in socioeconomic status, familiarity, or unusualness.
 
-The empty response template and current pending outputs are stored in:
+The production response schema and approval outputs are stored in:
 
 - [`data/name_validation/perception_responses.csv`](data/name_validation/perception_responses.csv)
 - [`results/name_validation/name_summary.csv`](results/name_validation/name_summary.csv)
 - [`results/name_validation/name_balance_tests.csv`](results/name_validation/name_balance_tests.csv)
 
 The live runner stops automatically unless every configured perceived name signal passes.
+
+### Submitted survey outcome
+
+A submitted workbook contained **150 respondent IDs** and **1,200 complete name ratings**. Every respondent rated all eight names, with no duplicate respondent-name pairs and no missing rating fields.
+
+All eight names passed the name-level agreement, perceived-gender, sample-size, and confidence thresholds descriptively. Intended-group agreement ranged from **88.0% to 97.3%**, perceived-male agreement ranged from **94.0% to 98.7%**, and every median confidence score was at least **4/5**.
+
+The submission is **not approved** for two independent reasons:
+
+1. the export does not include consent or attention-check fields, so respondent eligibility cannot be established under the preregistered exclusion rules;
+2. the between-group balance ranges exceed the locked maximum of 0.75 points: **0.947 for familiarity, 1.130 for socioeconomic impression, and 1.713 for unusualness**.
+
+Raw participant-level rows are not committed to this public repository because data-sharing permission is not documented. Aggregate outputs and the data-quality review are stored in:
+
+- [`results/name_validation/submitted_survey_name_summary.csv`](results/name_validation/submitted_survey_name_summary.csv)
+- [`results/name_validation/submitted_survey_balance_tests.csv`](results/name_validation/submitted_survey_balance_tests.csv)
+- [`results/name_validation/submitted_survey_validation_report.md`](results/name_validation/submitted_survey_validation_report.md)
+- [`data/name_validation/submitted_survey_manifest.csv`](data/name_validation/submitted_survey_manifest.csv)
+
+No threshold was changed after viewing these results. The live Claude audit remains blocked.
 
 ### Simulated pretest for pipeline validation
 
@@ -118,7 +138,7 @@ The complete plan is in [`docs/preregistration.md`](docs/preregistration.md), an
 
 Before a live run, the repository requires:
 
-1. completion of the perception pretest;
+1. completion and approval of the perception pretest;
 2. approval of every perceived name signal;
 3. an exact model ID supplied through `ANTHROPIC_MODEL`;
 4. the locked prompt, sample, temperature, and stopping rule.

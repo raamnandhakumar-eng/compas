@@ -1,0 +1,4 @@
+metric,signal_a_mean,signal_b_mean,signal_c_mean,signal_d_mean,between_group_range,maximum_allowed,complete,pass
+familiarity,3.383333,4.236667,4.070000,4.330000,0.946667,0.75,true,false
+perceived_socioeconomic_status,4.226667,3.953333,3.096667,3.346667,1.130000,0.75,true,false
+name_unusual,3.223333,1.510000,2.860000,1.523333,1.713333,0.75,true,false

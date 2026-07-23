@@ -1,0 +1,9 @@
+candidate_id,signal_group,full_name,perceived_name_signal,ratings_received,eligibility_verified_respondents,modal_perceived_group,group_agreement,modal_perceived_gender,gender_agreement,mean_familiarity,mean_socioeconomic_status,median_confidence,mean_unusual,name_level_thresholds_pass,balance_gate_pass,administration_evidence_complete,approved_for_live_audit,analysis_status
+arjun_patel,signal_a,Arjun Patel,South Asian,150,0,South Asian,0.900000,male,0.973333,3.240000,4.140000,5.0,3.260000,true,false,false,false,provisional_nonapproving
+rohan_shah,signal_a,Rohan Shah,South Asian,150,0,South Asian,0.880000,male,0.940000,3.526667,4.313333,4.0,3.186667,true,false,false,false,provisional_nonapproving
+ethan_miller,signal_b,Ethan Miller,White,150,0,White,0.966667,male,0.973333,4.240000,3.900000,5.0,1.486667,true,false,false,false,provisional_nonapproving
+lucas_bennett,signal_b,Lucas Bennett,White,150,0,White,0.926667,male,0.973333,4.233333,4.006667,5.0,1.533333,true,false,false,false,provisional_nonapproving
+jamal_reed,signal_c,Jamal Reed,Black,150,0,Black,0.973333,male,0.980000,4.033333,2.766667,5.0,3.013333,true,false,false,false,provisional_nonapproving
+darius_cole,signal_c,Darius Cole,Black,150,0,Black,0.933333,male,0.986667,4.106667,3.426667,4.0,2.706667,true,false,false,false,provisional_nonapproving
+carlos_garcia,signal_d,Carlos Garcia,Hispanic or Latino,150,0,Hispanic or Latino,0.946667,male,0.980000,4.406667,3.106667,5.0,1.360000,true,false,false,false,provisional_nonapproving
+mateo_rodriguez,signal_d,Mateo Rodriguez,Hispanic or Latino,150,0,Hispanic or Latino,0.940000,male,0.973333,4.253333,3.586667,5.0,1.686667,true,false,false,false,provisional_nonapproving
