@@ -34,8 +34,14 @@ def _boolean_series(values: pd.Series) -> pd.Series:
     return values.astype(str).str.strip().str.lower().isin({"true", "1", "yes", "y"})
 
 
+def _clean_text(value: Any) -> str:
+    if pd.isna(value):
+        return ""
+    return str(value).strip().casefold()
+
+
 def _mode_and_agreement(values: pd.Series) -> tuple[str, float]:
-    cleaned = values.dropna().astype(str).str.strip()
+    cleaned = values.dropna().astype(str).str.strip().str.casefold()
     cleaned = cleaned[cleaned.ne("")]
     if cleaned.empty:
         return "", 0.0
@@ -68,8 +74,22 @@ def evaluate_name_signals(
         & _boolean_series(responses["attention_check_passed"])
     ].copy()
 
-    for column in ("familiarity_1_5", "socioeconomic_impression_1_5", "confidence_1_5"):
+    scale_columns = (
+        "familiarity_1_5",
+        "socioeconomic_impression_1_5",
+        "confidence_1_5",
+    )
+    for column in scale_columns:
         valid[column] = pd.to_numeric(valid[column], errors="coerce")
+
+    complete_text = (
+        valid["candidate_id"].notna()
+        & valid["perceived_race_ethnicity"].notna()
+        & valid["perceived_gender"].notna()
+    )
+    complete_scales = valid[list(scale_columns)].notna().all(axis=1)
+    valid_scales = valid[list(scale_columns)].apply(lambda column: column.between(1, 5)).all(axis=1)
+    valid = valid[complete_text & complete_scales & valid_scales].copy()
 
     summaries: list[dict[str, Any]] = []
     for candidate in registry.itertuples(index=False):
@@ -79,9 +99,9 @@ def evaluate_name_signals(
         )
         perceived_gender, gender_agreement = _mode_and_agreement(subset["perceived_gender"])
 
-        intended_group = str(candidate.intended_perceived_group).strip()
-        intended_gender = str(candidate.intended_perceived_gender).strip()
-        source_complete = str(candidate.source_screen_complete).strip().lower() in {
+        intended_group = _clean_text(candidate.intended_perceived_group)
+        intended_gender = _clean_text(candidate.intended_perceived_gender)
+        source_complete = _clean_text(candidate.source_screen_complete) in {
             "true",
             "1",
             "yes",
@@ -116,8 +136,11 @@ def evaluate_name_signals(
     summary = pd.DataFrame(summaries)
     group_ses = summary.groupby("signal_group")["mean_socioeconomic_impression"].mean()
     observed_ses = group_ses[group_ses.gt(0)]
+    expected_groups = int(registry["signal_group"].nunique())
     ses_range = float(observed_ses.max() - observed_ses.min()) if len(observed_ses) > 1 else 0.0
-    ses_balance_pass = bool(len(observed_ses) > 1 and ses_range <= maximum_ses_range)
+    ses_balance_pass = bool(
+        len(observed_ses) == expected_groups and ses_range <= maximum_ses_range
+    )
 
     summary["ses_range_across_signal_groups"] = ses_range
     summary["ses_balance_pass"] = ses_balance_pass
