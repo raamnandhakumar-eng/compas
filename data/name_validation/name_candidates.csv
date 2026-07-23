@@ -1,0 +1,9 @@
+candidate_id,signal_group,full_name,first_name,last_name,intended_perceived_group,intended_perceived_gender,census_first_name_count,census_first_name_dominant_group,census_first_name_dominant_pct,census_last_name_count,census_last_name_dominant_group,census_last_name_dominant_pct,census_gender_dominant,census_gender_dominant_pct,ssa_births_target_cohort,source_screen_complete,notes
+asha_raman,signal_a,Asha Raman,Asha,Raman,,,0,,0,0,,0,,0,0,false,Pending official source screening and perception pretest
+priya_nair,signal_a,Priya Nair,Priya,Nair,,,0,,0,0,,0,,0,0,false,Pending official source screening and perception pretest
+emily_carter,signal_b,Emily Carter,Emily,Carter,,,0,,0,0,,0,,0,0,false,Pending official source screening and perception pretest
+hannah_brooks,signal_b,Hannah Brooks,Hannah,Brooks,,,0,,0,0,,0,,0,0,false,Pending official source screening and perception pretest
+jamal_reed,signal_c,Jamal Reed,Jamal,Reed,,,0,,0,0,,0,,0,0,false,Pending official source screening and perception pretest
+darius_cole,signal_c,Darius Cole,Darius,Cole,,,0,,0,0,,0,,0,0,false,Pending official source screening and perception pretest
+ethan_miller,signal_d,Ethan Miller,Ethan,Miller,,,0,,0,0,,0,,0,0,false,Pending official source screening and perception pretest
+lucas_bennett,signal_d,Lucas Bennett,Lucas,Bennett,,,0,,0,0,,0,,0,0,false,Pending official source screening and perception pretest
