@@ -11,10 +11,19 @@ from .common import load_config
 REGISTRY_COLUMNS = {
     "candidate_id",
     "signal_group",
+    "perceived_name_signal",
+    "first_name",
+    "last_name",
     "full_name",
-    "intended_perceived_group",
-    "intended_perceived_gender",
-    "source_screen_complete",
+    "census_first_count",
+    "census_first_group_share",
+    "census_first_sex_share",
+    "census_last_count",
+    "census_last_group_share",
+    "ssa_frequency",
+    "source_year",
+    "source_file",
+    "screening_status",
 }
 
 RESPONSE_COLUMNS = {
@@ -23,8 +32,9 @@ RESPONSE_COLUMNS = {
     "perceived_race_ethnicity",
     "perceived_gender",
     "familiarity_1_5",
-    "socioeconomic_impression_1_5",
+    "perceived_socioeconomic_status_1_5",
     "confidence_1_5",
+    "name_unusual_1_5",
     "consent_confirmed",
     "attention_check_passed",
 }
@@ -49,11 +59,20 @@ def _mode_and_agreement(values: pd.Series) -> tuple[str, float]:
     return str(counts.index[0]), float(counts.iloc[0] / counts.sum())
 
 
+def _range_by_group(summary: pd.DataFrame, value: str, expected_groups: int) -> tuple[float, bool]:
+    group_means = summary.groupby("signal_group")[value].mean()
+    observed = group_means[group_means.notna()]
+    if len(observed) != expected_groups:
+        return float("nan"), False
+    value_range = float(observed.max() - observed.min())
+    return value_range, True
+
+
 def evaluate_name_signals(
     registry: pd.DataFrame,
     responses: pd.DataFrame,
     settings: dict[str, Any],
-) -> pd.DataFrame:
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     missing_registry = REGISTRY_COLUMNS - set(registry.columns)
     if missing_registry:
         raise ValueError(f"Name registry is missing columns: {sorted(missing_registry)}")
@@ -63,11 +82,14 @@ def evaluate_name_signals(
         raise ValueError(f"Perception responses are missing columns: {sorted(missing_responses)}")
 
     minimum_respondents = int(settings.get("minimum_respondents", 100))
-    minimum_group_agreement = float(settings.get("minimum_group_agreement", 0.80))
-    minimum_gender_agreement = float(settings.get("minimum_gender_agreement", 0.80))
-    minimum_mean_confidence = float(settings.get("minimum_mean_confidence", 3.5))
-    maximum_mean_familiarity = float(settings.get("maximum_mean_familiarity", 3.0))
+    minimum_group_agreement = float(settings.get("minimum_group_agreement", 0.70))
+    minimum_gender_agreement = float(settings.get("minimum_gender_agreement", 0.70))
+    minimum_median_confidence = float(settings.get("minimum_median_confidence", 4.0))
     maximum_ses_range = float(settings.get("maximum_between_group_ses_range", 0.75))
+    maximum_familiarity_range = float(
+        settings.get("maximum_between_group_familiarity_range", 0.75)
+    )
+    maximum_unusual_range = float(settings.get("maximum_between_group_unusual_range", 0.75))
 
     valid = responses[
         _boolean_series(responses["consent_confirmed"])
@@ -76,8 +98,9 @@ def evaluate_name_signals(
 
     scale_columns = (
         "familiarity_1_5",
-        "socioeconomic_impression_1_5",
+        "perceived_socioeconomic_status_1_5",
         "confidence_1_5",
+        "name_unusual_1_5",
     )
     for column in scale_columns:
         valid[column] = pd.to_numeric(valid[column], errors="coerce")
@@ -88,7 +111,7 @@ def evaluate_name_signals(
         & valid["perceived_gender"].notna()
     )
     complete_scales = valid[list(scale_columns)].notna().all(axis=1)
-    valid_scales = valid[list(scale_columns)].apply(lambda column: column.between(1, 5)).all(axis=1)
+    valid_scales = valid[list(scale_columns)].apply(lambda col: col.between(1, 5)).all(axis=1)
     valid = valid[complete_text & complete_scales & valid_scales].copy()
 
     summaries: list[dict[str, Any]] = []
@@ -98,66 +121,102 @@ def evaluate_name_signals(
             subset["perceived_race_ethnicity"]
         )
         perceived_gender, gender_agreement = _mode_and_agreement(subset["perceived_gender"])
-
-        intended_group = _clean_text(candidate.intended_perceived_group)
-        intended_gender = _clean_text(candidate.intended_perceived_gender)
-        source_complete = _clean_text(candidate.source_screen_complete) in {
-            "true",
-            "1",
-            "yes",
-            "y",
+        intended_group = _clean_text(candidate.perceived_name_signal)
+        intended_gender = "male"
+        source_complete = _clean_text(candidate.screening_status) in {
+            "source_screened_pending_pretest",
+            "approved",
         }
-
-        mean_familiarity = float(subset["familiarity_1_5"].mean()) if not subset.empty else 0.0
-        mean_ses = (
-            float(subset["socioeconomic_impression_1_5"].mean()) if not subset.empty else 0.0
-        )
-        mean_confidence = float(subset["confidence_1_5"].mean()) if not subset.empty else 0.0
 
         summaries.append(
             {
                 "candidate_id": candidate.candidate_id,
                 "signal_group": candidate.signal_group,
                 "full_name": candidate.full_name,
+                "perceived_name_signal": candidate.perceived_name_signal,
                 "valid_respondents": int(len(subset)),
-                "intended_perceived_group": intended_group,
                 "modal_perceived_group": perceived_group,
                 "group_agreement": group_agreement,
-                "intended_perceived_gender": intended_gender,
                 "modal_perceived_gender": perceived_gender,
                 "gender_agreement": gender_agreement,
-                "mean_familiarity": mean_familiarity,
-                "mean_socioeconomic_impression": mean_ses,
-                "mean_confidence": mean_confidence,
+                "mean_familiarity": (
+                    float(subset["familiarity_1_5"].mean())
+                    if not subset.empty
+                    else float("nan")
+                ),
+                "mean_socioeconomic_status": (
+                    float(subset["perceived_socioeconomic_status_1_5"].mean())
+                    if not subset.empty
+                    else float("nan")
+                ),
+                "median_confidence": (
+                    float(subset["confidence_1_5"].median())
+                    if not subset.empty
+                    else float("nan")
+                ),
+                "mean_unusual": (
+                    float(subset["name_unusual_1_5"].mean())
+                    if not subset.empty
+                    else float("nan")
+                ),
                 "source_screen_complete": source_complete,
+                "intended_group_match": perceived_group == intended_group,
+                "intended_gender_match": perceived_gender == intended_gender,
             }
         )
 
     summary = pd.DataFrame(summaries)
-    group_ses = summary.groupby("signal_group")["mean_socioeconomic_impression"].mean()
-    observed_ses = group_ses[group_ses.gt(0)]
     expected_groups = int(registry["signal_group"].nunique())
-    ses_range = float(observed_ses.max() - observed_ses.min()) if len(observed_ses) > 1 else 0.0
-    ses_balance_pass = bool(
-        len(observed_ses) == expected_groups and ses_range <= maximum_ses_range
+    ses_range, ses_complete = _range_by_group(
+        summary, "mean_socioeconomic_status", expected_groups
+    )
+    familiarity_range, familiarity_complete = _range_by_group(
+        summary, "mean_familiarity", expected_groups
+    )
+    unusual_range, unusual_complete = _range_by_group(
+        summary, "mean_unusual", expected_groups
     )
 
-    summary["ses_range_across_signal_groups"] = ses_range
-    summary["ses_balance_pass"] = ses_balance_pass
+    balance = pd.DataFrame(
+        [
+            {
+                "metric": "perceived_socioeconomic_status",
+                "between_group_range": ses_range,
+                "maximum_allowed": maximum_ses_range,
+                "complete": ses_complete,
+                "pass": bool(ses_complete and ses_range <= maximum_ses_range),
+            },
+            {
+                "metric": "familiarity",
+                "between_group_range": familiarity_range,
+                "maximum_allowed": maximum_familiarity_range,
+                "complete": familiarity_complete,
+                "pass": bool(
+                    familiarity_complete and familiarity_range <= maximum_familiarity_range
+                ),
+            },
+            {
+                "metric": "name_unusual",
+                "between_group_range": unusual_range,
+                "maximum_allowed": maximum_unusual_range,
+                "complete": unusual_complete,
+                "pass": bool(unusual_complete and unusual_range <= maximum_unusual_range),
+            },
+        ]
+    )
+    all_balance_pass = bool(balance["pass"].all())
+
     summary["approved_for_live_audit"] = (
         summary["source_screen_complete"]
         & summary["valid_respondents"].ge(minimum_respondents)
-        & summary["intended_perceived_group"].ne("")
-        & summary["modal_perceived_group"].eq(summary["intended_perceived_group"])
+        & summary["intended_group_match"]
         & summary["group_agreement"].ge(minimum_group_agreement)
-        & summary["intended_perceived_gender"].ne("")
-        & summary["modal_perceived_gender"].eq(summary["intended_perceived_gender"])
+        & summary["intended_gender_match"]
         & summary["gender_agreement"].ge(minimum_gender_agreement)
-        & summary["mean_confidence"].ge(minimum_mean_confidence)
-        & summary["mean_familiarity"].le(maximum_mean_familiarity)
-        & summary["ses_balance_pass"]
+        & summary["median_confidence"].ge(minimum_median_confidence)
+        & all_balance_pass
     )
-    return summary
+    return summary, balance
 
 
 def assert_live_name_signals_validated(config: dict[str, Any]) -> None:
@@ -166,12 +225,12 @@ def assert_live_name_signals_validated(config: dict[str, Any]) -> None:
         return
 
     summary_path = Path(
-        settings.get("summary_output", "outputs/name_validation_summary.csv")
+        settings.get("summary_output", "results/name_validation/name_summary.csv")
     )
     if not summary_path.exists():
         raise RuntimeError(
-            "Live audits require validated name signals. Run compas-validate-names "
-            "after completing the perception pretest."
+            "Live audits require validated perceived name signals. Run "
+            "compas-validate-names after completing the perception pretest."
         )
 
     summary = pd.read_csv(summary_path)
@@ -191,13 +250,13 @@ def assert_live_name_signals_validated(config: dict[str, Any]) -> None:
     unapproved = sorted(configured_names - approved)
     if unapproved:
         raise RuntimeError(
-            "Live audit blocked because these names have not passed source screening and "
-            f"the perception pretest: {unapproved}"
+            "Live audit blocked because these perceived name signals have not passed "
+            f"source screening and the perception pretest: {unapproved}"
         )
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Validate COMPAS name signals.")
+    parser = argparse.ArgumentParser(description="Validate COMPAS perceived name signals.")
     parser.add_argument("--config", default="config/audit.yaml")
     args = parser.parse_args()
 
@@ -209,16 +268,25 @@ def main() -> None:
     responses_path = Path(
         settings.get("perception_responses", "data/name_validation/perception_responses.csv")
     )
-    output_path = Path(settings.get("summary_output", "outputs/name_validation_summary.csv"))
+    summary_path = Path(
+        settings.get("summary_output", "results/name_validation/name_summary.csv")
+    )
+    balance_path = Path(
+        settings.get("balance_output", "results/name_validation/name_balance_tests.csv")
+    )
 
     registry = pd.read_csv(registry_path)
     responses = pd.read_csv(responses_path)
-    summary = evaluate_name_signals(registry, responses, settings)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    summary.to_csv(output_path, index=False)
+    summary, balance = evaluate_name_signals(registry, responses, settings)
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary.to_csv(summary_path, index=False)
+    balance.to_csv(balance_path, index=False)
 
     approved = int(summary["approved_for_live_audit"].sum())
-    print(f"Approved {approved} of {len(summary)} names; wrote {output_path}")
+    print(
+        f"Approved {approved} of {len(summary)} perceived name signals; "
+        f"wrote {summary_path} and {balance_path}"
+    )
 
 
 if __name__ == "__main__":
