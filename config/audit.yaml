@@ -15,6 +15,20 @@ analysis:
   cluster_column: resume_id
   fdr_alpha: 0.05
 
+name_validation:
+  required_for_live: true
+  candidate_registry: data/name_validation/name_candidates.csv
+  perception_responses: data/name_validation/perception_responses.csv
+  summary_output: outputs/name_validation_summary.csv
+  target_respondents_min: 100
+  target_respondents_max: 200
+  minimum_respondents: 100
+  minimum_group_agreement: 0.80
+  minimum_gender_agreement: 0.80
+  minimum_mean_confidence: 3.5
+  maximum_mean_familiarity: 3.0
+  maximum_between_group_ses_range: 0.75
+
 signals:
   names:
     signal_a:
