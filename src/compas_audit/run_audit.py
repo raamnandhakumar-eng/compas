@@ -10,6 +10,7 @@ from typing import Any
 import pandas as pd
 
 from .common import extract_json_object, load_config, sha256_text, stable_id
+from .name_validation import assert_live_name_signals_validated
 from .prompts import SYSTEM_PROMPT, screening_prompt
 from .providers import AnthropicProvider, MockProvider, ScreeningProvider
 
@@ -52,6 +53,9 @@ def build_provider(name: str, model: str, seed: int) -> ScreeningProvider:
 
 def run_experiment(config_path: str, provider_name: str, limit: int | None = None) -> pd.DataFrame:
     config = load_config(config_path)
+    if provider_name == "anthropic":
+        assert_live_name_signals_validated(config)
+
     resumes_path = Path(config.get("output_resumes", "outputs/resume_permutations.csv"))
     if not resumes_path.exists():
         raise FileNotFoundError(
