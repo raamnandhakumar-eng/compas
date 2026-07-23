@@ -38,6 +38,12 @@ The current repository contains a fully operational experimental and econometric
 
 The design produces 128 resumes by varying candidate signals across four qualification-matched templates. Each resume is evaluated five times at two temperatures, producing a planned audit of **1,280 model decisions**.
 
+### Audit design visual
+
+![COMPAS audit design scale](docs/figures/audit_design_scale.svg)
+
+*The figure shows the validated experimental scale. It does not present live-model demographic bias findings.*
+
 ### What has already been validated
 
 - The generator creates a complete and balanced factorial dataset.
