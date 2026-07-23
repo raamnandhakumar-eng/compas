@@ -40,7 +40,13 @@ The design produces 128 resumes by varying candidate signals across four qualifi
 
 ### Audit design visual
 
-![COMPAS audit design scale](docs/figures/audit_design_scale.svg)
+![COMPAS experimental design](docs/figures/audit_design_scale.svg)
+
+The figure is generated with Python by [`scripts/make_audit_design_figure.py`](scripts/make_audit_design_figure.py):
+
+```bash
+python scripts/make_audit_design_figure.py
+```
 
 *The figure shows the validated experimental scale. It does not present live-model demographic bias findings.*
 
@@ -195,14 +201,16 @@ Disparity tables, stability metrics, and plots
 ## Repository structure
 
 ```text
-config/audit.yaml                    Experimental settings
-data/templates/resume_templates.csv  Standardized candidate profiles
-docs/methodology.md                  Identification strategy and limitations
-src/compas_audit/generate.py         Matched resume generation
-src/compas_audit/providers.py        Mock and Anthropic model providers
-src/compas_audit/run_audit.py        Repeated screening experiment
-src/compas_audit/analyze.py          Econometric models and visualizations
-tests/test_pipeline.py               Design and validation tests
+config/audit.yaml                       Experimental settings
+data/templates/resume_templates.csv     Standardized candidate profiles
+docs/figures/audit_design_scale.svg     Python-generated design figure
+docs/methodology.md                     Identification strategy and limitations
+scripts/make_audit_design_figure.py     Reproducible Python figure script
+src/compas_audit/generate.py            Matched resume generation
+src/compas_audit/providers.py           Mock and Anthropic model providers
+src/compas_audit/run_audit.py           Repeated screening experiment
+src/compas_audit/analyze.py             Econometric models and visualizations
+tests/test_pipeline.py                  Design and validation tests
 ```
 
 ---
@@ -213,6 +221,9 @@ tests/test_pipeline.py               Design and validation tests
 python -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
+
+# Rebuild the README design figure
+python scripts/make_audit_design_figure.py
 
 # Generate 128 matched synthetic resumes
 compas-generate --config config/audit.yaml
