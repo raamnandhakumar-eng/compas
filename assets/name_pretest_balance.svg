@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="560" viewBox="0 0 960 560" role="img" aria-labelledby="title desc">
+  <title id="title">Name-pretest balance checks</title>
+  <desc id="desc">Three bars show observed between-group ranges for familiarity, perceived socioeconomic status, and unusualness. All exceed the preregistered maximum of 0.75.</desc>
+  <rect width="960" height="560" fill="white"/>
+  <style>
+    .title { font: 700 28px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #111827; }
+    .subtitle { font: 400 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #4b5563; }
+    .axis { stroke: #9ca3af; stroke-width: 1; }
+    .grid { stroke: #e5e7eb; stroke-width: 1; }
+    .bar { fill: #4c78a8; }
+    .threshold { stroke: #d62728; stroke-width: 3; stroke-dasharray: 10 8; }
+    .label { font: 600 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1f2937; }
+    .value { font: 700 17px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #111827; }
+    .tick { font: 400 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #6b7280; }
+    .note { font: 400 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #374151; }
+    .threshold-label { font: 600 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #b91c1c; }
+  </style>
+
+  <text x="80" y="56" class="title">Name-pretest balance checks</text>
+  <text x="80" y="84" class="subtitle">Observed between-group ranges on a 1–5 rating scale</text>
+
+  <!-- plotting area: x=130..900, y=120..430; scale 155 px per unit -->
+  <line x1="130" y1="430" x2="900" y2="430" class="axis"/>
+  <line x1="130" y1="120" x2="130" y2="430" class="axis"/>
+
+  <line x1="130" y1="352.5" x2="900" y2="352.5" class="grid"/>
+  <line x1="130" y1="275" x2="900" y2="275" class="grid"/>
+  <line x1="130" y1="197.5" x2="900" y2="197.5" class="grid"/>
+  <line x1="130" y1="120" x2="900" y2="120" class="grid"/>
+
+  <text x="112" y="435" text-anchor="end" class="tick">0.0</text>
+  <text x="112" y="357.5" text-anchor="end" class="tick">0.5</text>
+  <text x="112" y="280" text-anchor="end" class="tick">1.0</text>
+  <text x="112" y="202.5" text-anchor="end" class="tick">1.5</text>
+  <text x="112" y="125" text-anchor="end" class="tick">2.0</text>
+
+  <!-- preregistered threshold: 0.75 -->
+  <line x1="130" y1="313.75" x2="900" y2="313.75" class="threshold"/>
+  <text x="895" y="302" text-anchor="end" class="threshold-label">Preregistered maximum: 0.75</text>
+
+  <!-- familiarity: 0.947 -->
+  <rect x="205" y="283.215" width="145" height="146.785" rx="6" class="bar"/>
+  <text x="277.5" y="270" text-anchor="middle" class="value">0.947</text>
+  <text x="277.5" y="462" text-anchor="middle" class="label">Familiarity</text>
+
+  <!-- socioeconomic status: 1.130 -->
+  <rect x="445" y="254.85" width="145" height="175.15" rx="6" class="bar"/>
+  <text x="517.5" y="242" text-anchor="middle" class="value">1.130</text>
+  <text x="517.5" y="462" text-anchor="middle" class="label">Perceived socioeconomic</text>
+  <text x="517.5" y="482" text-anchor="middle" class="label">status</text>
+
+  <!-- unusualness: 1.713 -->
+  <rect x="685" y="164.485" width="145" height="265.515" rx="6" class="bar"/>
+  <text x="757.5" y="151" text-anchor="middle" class="value">1.713</text>
+  <text x="757.5" y="462" text-anchor="middle" class="label">Unusualness</text>
+
+  <text x="80" y="530" class="note">All three ranges exceed the locked threshold, so the name-signal extension remains blocked.</text>
+</svg>
