@@ -10,6 +10,28 @@ This repository currently reports one completed result: a **1,280-evaluation pla
 
 > This repository is unrelated to the criminal-risk assessment product also called COMPAS.
 
+## Real public data used for name screening
+
+The name-screening part of COMPAS is built around **real U.S. government data**, not invented demographic probabilities.
+
+The validation workflow uses:
+
+- the complete **2020 U.S. Census first-name tables by race and Hispanic origin**;
+- the **2020 Census first-name tables by sex**;
+- the complete **2020 Census last-name tables by race and Hispanic origin**;
+- **Social Security Administration birth-name frequencies by year**.
+
+These are observed, aggregate public records. They are used to check whether each first name and surname is frequent enough and whether its broad Census and SSA patterns support inclusion in the perception study.
+
+This does not make a name an identity label. Census and SSA statistics cannot establish a person's race, ethnicity, gender, nationality, or socioeconomic status. For that reason, COMPAS also requires a separate perception survey with approximately 100 to 200 respondents.
+
+The current eight names remain marked **pending** until the official name-level values are populated in the registry and the human perception pretest is completed. Until then, the analysis uses the neutral labels `signal_a` through `signal_d`.
+
+The public name data and the audit outcomes should not be confused:
+
+- **Name screening:** based on real Census and SSA aggregate data.
+- **Completed model results:** based on the deterministic placebo provider, not a live model.
+
 ## Completed results
 
 ![Completed placebo validation](docs/figures/placebo_run_summary.svg)
@@ -87,20 +109,20 @@ That question requires a separately reported live-model run using the locked des
 
 The eight configured names are currently **candidate stimuli**, not validated demographic signals.
 
-Before a live audit, COMPAS now requires two checks:
+Before a live audit, COMPAS requires two checks:
 
 1. **Official source screening** using the complete 2020 Census first-name and last-name tables and SSA first-name frequencies by birth year.
 2. **A separate perception pretest** with approximately 100 to 200 respondents rating perceived race or ethnicity, perceived gender, familiarity, socioeconomic impression, and confidence.
 
 Census and SSA associations alone are not enough. Every name must show strong perception agreement and acceptable familiarity and socioeconomic balance.
 
-The current registry is marked pending. A live Anthropic run will stop unless all configured names pass:
+A live Anthropic run will stop unless all configured names pass:
 
 ```bash
 compas-validate-names --config config/audit.yaml
 ```
 
-The full process is documented in [`docs/name_signal_validation_protocol.md`](docs/name_signal_validation_protocol.md). Until it is completed, results must use the neutral labels `signal_a` through `signal_d`.
+The full process is documented in [`docs/name_signal_validation_protocol.md`](docs/name_signal_validation_protocol.md).
 
 ## Audit sample
 
