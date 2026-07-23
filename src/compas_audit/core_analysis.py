@@ -155,14 +155,15 @@ def placebo_recovery(coefficients: pd.DataFrame) -> pd.DataFrame:
 
 
 def treatment_means(data: pd.DataFrame) -> pd.DataFrame:
-    count_column = "observation_id" if "observation_id" in data else "resume_id"
     return (
         data.groupby(
             ["occupation_tier", "education_pathway", "career_gap_months"],
             as_index=False,
         )
         .agg(
-            evaluations=(count_column, "size"),
+            evaluations=("observation_id", "size")
+            if "observation_id" in data
+            else ("resume_id", "size"),
             mean_fit_score=("fit_score", "mean"),
             interview_rate=("recommend", "mean"),
             mean_confidence=("confidence", "mean"),
@@ -176,6 +177,19 @@ def treatment_means(data: pd.DataFrame) -> pd.DataFrame:
 def failure_sensitivity(data_with_failures: pd.DataFrame) -> pd.DataFrame:
     sensitivity = data_with_failures.copy()
     sensitivity["recommend_failed_as_zero"] = sensitivity["recommend"].fillna(0)
+    if sensitivity["recommend_failed_as_zero"].nunique() < 2:
+        return pd.DataFrame(
+            columns=[
+                "outcome",
+                "model_type",
+                "term",
+                "estimate",
+                "std_error_clustered",
+                "p_value",
+                "ci_95_low",
+                "ci_95_high",
+            ]
+        )
     covariance = {"groups": sensitivity["resume_id"], "use_correction": True}
     model = smf.ols(
         core_model_formula("recommend_failed_as_zero"),
@@ -216,6 +230,7 @@ def write_report(
         f"- Unique matched resumes: **{data['resume_id'].nunique():,}**",
         f"- Base profiles: **{data['matched_set_id'].nunique():,}**",
         f"- Occupations: **{data['occupation_id'].nunique():,}**",
+        f"- Recommendation model estimable: **{'Yes' if data['recommend'].nunique() >= 2 else 'No'}**",
         "",
         "## Primary coefficients",
         "",
@@ -250,12 +265,16 @@ def analyze_core(input_path: str, output_dir: str, fdr_alpha: float = 0.05) -> N
 
     models = [
         (fit_core_linear_model(data, "fit_score"), "fit_score", "linear"),
-        (fit_core_linear_model(data, "recommend"), "recommend", "linear"),
         (fit_core_linear_model(data, "confidence"), "confidence", "linear"),
     ]
-    logistic = fit_core_logistic_recommendation(data)
-    if logistic is not None:
-        models.append((logistic, "recommend", "logistic"))
+    recommendation_estimable = data["recommend"].nunique() >= 2
+    if recommendation_estimable:
+        models.append(
+            (fit_core_linear_model(data, "recommend"), "recommend", "linear")
+        )
+        logistic = fit_core_logistic_recommendation(data)
+        if logistic is not None:
+            models.append((logistic, "recommend", "logistic"))
 
     coefficients = pd.concat(
         [
@@ -278,6 +297,7 @@ def analyze_core(input_path: str, output_dir: str, fdr_alpha: float = 0.05) -> N
                 "unique_base_profiles": data["matched_set_id"].nunique(),
                 "unique_occupations": data["occupation_id"].nunique(),
                 "name_signal_effects_estimated": False,
+                "recommendation_models_estimable": recommendation_estimable,
             }
         ]
     )
