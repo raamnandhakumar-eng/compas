@@ -230,7 +230,8 @@ def write_report(
         f"- Unique matched resumes: **{data['resume_id'].nunique():,}**",
         f"- Base profiles: **{data['matched_set_id'].nunique():,}**",
         f"- Occupations: **{data['occupation_id'].nunique():,}**",
-        f"- Recommendation model estimable: **{'Yes' if data['recommend'].nunique() >= 2 else 'No'}**",
+        "- Recommendation model estimable: "
+        f"**{'Yes' if data['recommend'].nunique() >= 2 else 'No'}**",
         "",
         "## Primary coefficients",
         "",
