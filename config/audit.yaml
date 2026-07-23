@@ -1,0 +1,31 @@
+seed: 42
+trials_per_resume: 5
+temperatures: [0.0, 0.4]
+output_resumes: outputs/resume_permutations.csv
+output_results: outputs/screening_results.csv
+
+provider:
+  model: claude-sonnet-4-20250514
+  max_tokens: 500
+  request_delay_seconds: 0.0
+
+signals:
+  names:
+    signal_a:
+      - Asha Raman
+      - Priya Nair
+    signal_b:
+      - Emily Carter
+      - Hannah Brooks
+    signal_c:
+      - Jamal Reed
+      - Darius Cole
+    signal_d:
+      - Ethan Miller
+      - Lucas Bennett
+  education_pathway:
+    - traditional
+    - nontraditional
+  career_gap_months:
+    - 0
+    - 12
