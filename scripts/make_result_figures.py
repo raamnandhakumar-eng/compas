@@ -1,4 +1,4 @@
-from __future__ import annotations
+# ruff: noqa: I001
 
 import argparse
 from pathlib import Path
