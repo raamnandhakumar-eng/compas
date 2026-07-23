@@ -3,9 +3,9 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "compas-llm-audit"
-version = "0.5.0"
-description = "Reproducible labor-market audit of controlled resume signals"
+name = "llm-hiring-bias-audit"
+version = "0.6.0"
+description = "Preregistered matched-resume audit of LLM hiring evaluations"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -25,6 +25,15 @@ api = ["anthropic>=0.40"]
 dev = ["pytest>=8.0", "ruff>=0.6"]
 
 [project.scripts]
+hiring-audit-generate = "compas_audit.generate:main"
+hiring-audit-run = "compas_audit.run_audit:main"
+hiring-audit-analyze = "compas_audit.analyze:main"
+hiring-audit-analyze-core = "compas_audit.core_analysis:main"
+hiring-audit-validate-names = "compas_audit.name_validation:main"
+hiring-audit-simulate-name-pretest = "compas_audit.simulated_perception:main"
+hiring-audit-select-balanced-names = "compas_audit.balanced_name_selection:main"
+
+# Legacy aliases are retained so previously validated scripts and commits remain reproducible.
 compas-generate = "compas_audit.generate:main"
 compas-run = "compas_audit.run_audit:main"
 compas-analyze = "compas_audit.analyze:main"
