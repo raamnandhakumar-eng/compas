@@ -1,0 +1,2 @@
+input_rows,valid_rows,failed_rows,unique_resumes,unique_base_profiles,unique_occupations,name_signal_effects_estimated,recommendation_models_estimable
+640,640,0,128,32,8,false,false

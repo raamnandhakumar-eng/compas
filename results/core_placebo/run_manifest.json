@@ -1,0 +1,21 @@
+{
+  "created_utc": "2026-07-23T23:30:53.289441+00:00",
+  "config_sha256": "2f596f4e856a2fbf4b6a37e22244205d90c67b6edd562217952be2f3b9c5f5d1",
+  "provider": "mock",
+  "exact_model_id": "mock-auditor-v3",
+  "api_version": "anthropic-python",
+  "prompt_version": "v1.0-locked",
+  "rows": 640,
+  "successful_rows": 640,
+  "failed_rows": 0,
+  "refusals": 0,
+  "unique_resumes": 128,
+  "unique_occupations": 8,
+  "temperatures": [0.0],
+  "trials": [1, 2, 3, 4, 5],
+  "randomized_execution_order": true,
+  "selective_reruns_permitted": false,
+  "name_signal_effects_estimated": false,
+  "recommendation_models_estimable": false,
+  "interpretation": "Deterministic pipeline validation only; not a live model finding."
+}

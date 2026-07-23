@@ -42,7 +42,25 @@ jobs:
           path: |
             data/simulated/name_validation/perception_responses_simulated.csv
             results/simulated/name_validation/
-      - run: compas-generate --config config/audit.yaml
-      - run: compas-run --config config/audit.yaml --provider mock
-      - run: compas-analyze --input outputs/screening_results.csv --output-dir outputs/analysis
+      - name: Run full-design placebo
+        run: |
+          compas-generate --config config/audit.yaml
+          compas-run --config config/audit.yaml --provider mock
+          compas-analyze \
+            --input outputs/screening_results.csv \
+            --output-dir outputs/analysis
+      - name: Run core-design placebo
+        run: |
+          compas-generate --config config/core_audit.yaml
+          compas-run --config config/core_audit.yaml --provider mock
+          compas-analyze-core \
+            --input outputs/core/screening_results.csv \
+            --output-dir outputs/core/analysis
       - run: python scripts/make_result_figures.py
+      - name: Upload core placebo outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-audit-placebo
+          path: |
+            outputs/core/run_manifest.json
+            outputs/core/analysis/
