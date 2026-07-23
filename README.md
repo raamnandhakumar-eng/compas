@@ -124,6 +124,7 @@ compas-run --config config/audit.yaml --provider mock
 compas-analyze \
   --input outputs/screening_results.csv \
   --output-dir outputs/analysis
+python scripts/make_result_figures.py
 
 pytest -q
 ```
@@ -158,6 +159,7 @@ docs/preregistration.md                   Pre-analysis plan
 docs/methodology.md                       Estimation and limitations
 docs/data_sources.md                      Source notes
 docs/human_baseline_protocol.md           Blinded human comparison protocol
+scripts/make_result_figures.py             Rebuilds figures from result tables
 src/compas_audit/generate.py              Resume generator
 src/compas_audit/providers.py             Placebo and Anthropic providers
 src/compas_audit/run_audit.py             Repeated screening run
