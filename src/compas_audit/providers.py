@@ -25,7 +25,7 @@ class ScreeningProvider(Protocol):
 
 @dataclass
 class MockProvider:
-    """Deterministic placebo provider with transparent planted effects."""
+    """Small deterministic model used to test the audit before a paid run."""
 
     model_name: str = "mock-auditor-v2"
     seed: int = 42
@@ -50,7 +50,7 @@ class MockProvider:
             or "Target role: Supply Chain Supervisor\n" in user_prompt
         )
 
-        # Planted effects validate whether the analysis recovers known coefficients.
+        # These changes are intentional. The regression should recover them.
         if "Career break: 12 months" in user_prompt:
             base -= 0.45
         if "Non-traditional pathway" in user_prompt:
