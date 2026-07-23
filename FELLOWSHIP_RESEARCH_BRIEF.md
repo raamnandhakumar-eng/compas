@@ -28,15 +28,23 @@ COMPAS turns that policy concern into a controlled empirical design:
 
 - A deterministic placebo benchmark validates resume generation, randomized execution,
   parsing, failure retention, and coefficient recovery.
-- The repository contains 32 base profiles across eight occupations.
+- The new core placebo completed **640 of 640 evaluations**, with **zero failures**
+  across **128 matched resumes**, **32 base profiles**, and **eight occupations**.
+- The core estimator recovered the planted career-gap effect of **-0.45** and the
+  non-traditional-education effect of **-0.15** with effectively zero recovery error.
+- A constant mock recommendation outcome is explicitly reported as **not estimable**
+  rather than interpreted from numerical noise.
 - The first 150-person name-perception pretest is preserved as a non-approving result.
   It showed strong signal recognition but failed preregistered balance and
   administration requirements.
-- The core career-gap and education-pathway audit is now separated from the gated
-  name-signal extension, allowing a clean 640-evaluation study to proceed without
-  weakening the original name-validation standard.
+- The core career-gap and education-pathway audit is separated from the gated
+  name-signal extension, allowing a clean live study without weakening the original
+  name-validation standard.
 - An exhaustive Python selector is included for choosing a better-balanced replacement
   name panel from a future pilot.
+
+See the committed validation evidence in
+[`results/core_placebo/core_placebo_validation_report.md`](results/core_placebo/core_placebo_validation_report.md).
 
 ## Empirical contribution
 
