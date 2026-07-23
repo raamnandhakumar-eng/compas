@@ -2,83 +2,90 @@
 
 **Candidate Outcome Measurement and Prompt Audit Suite**
 
-I built COMPAS to test a simple hiring question:
+COMPAS is a reproducible audit pipeline for testing whether resume-screening models change their decisions when candidate signals change but qualifications stay fixed.
 
-> When two resumes show the same qualifications, does an LLM score them differently because of the candidate signal, education path, career gap, or type of job?
+This repository currently reports one completed result: a **1,280-evaluation placebo validation** of the software and econometric pipeline.
 
-The project creates matched synthetic resumes, sends them through the same screening prompt, checks every response, and estimates whether the scores or recommendations change. It compares frontline and operational jobs with knowledge-work jobs.
+> The placebo findings below are not findings about Claude, employers, or real applicants. A live Claude audit has not been run.
 
 > This repository is unrelated to the criminal-risk assessment product also called COMPAS.
 
-## What the project did
+## Completed results
 
-COMPAS has four parts:
+![Completed placebo validation](docs/figures/placebo_run_summary.svg)
 
-1. It builds **128 synthetic resumes** from four job templates.
-2. It changes only the selected experimental signals while keeping qualifications fixed.
-3. It runs each resume five times at two temperatures, giving **1,280 evaluations per model**.
-4. It estimates score and recommendation differences with template and temperature fixed effects, standard errors clustered by resume, and false-discovery-rate correction.
+The completed run used `mock-auditor-v2`, a deterministic test provider with known score changes planted in advance.
 
-The audit varies:
+The purpose was simple: check whether the full pipeline could run without data loss and recover effects whose true values were already known.
 
-- four experimental name-signal groups;
-- traditional or non-traditional education wording;
-- no career gap or a 12-month career gap;
-- frontline or knowledge-work occupational context.
+The run produced:
 
-Experience, skills, education level, work history, target role, and quantified achievements stay fixed within each matched template.
-
-![COMPAS experimental design](docs/figures/audit_design_scale.svg)
-
-## What has actually been run
-
-| Part | Status |
-|---|---|
-| Research design | Complete |
-| 128 matched resumes | Complete |
-| 1,280-evaluation placebo run | Complete |
-| Response parser and data checks | Complete |
-| Clustered regression pipeline | Complete |
-| Human-evaluator protocol | Complete |
-| Live Claude audit | Ready, not yet run |
-
-The completed run used `mock-auditor-v2`, a small deterministic provider with score changes that were planted on purpose. This tests whether the code and estimator can recover effects that are already known.
-
-It is **not evidence about Claude, employers, or real applicants**.
-
-## Findings so far
-
-The placebo run completed all **1,280 of 1,280 evaluations** with:
-
+- **1,280 successful evaluations out of 1,280 planned**;
 - **0 parser failures**;
 - **128 unique matched resumes**;
 - **4 occupational templates**;
-- **2 temperatures**;
-- **5 repeated trials per resume-temperature cell**.
+- **2 temperature settings**;
+- **5 repeated trials per resume-temperature cell**;
+- **0.000 mean absolute coefficient-recovery error**, rounded to three decimals.
 
-The regression recovered every planted fit-score effect to three decimal places.
+## Main finding
 
-| Planted change | Expected | Recovered |
-|---|---:|---:|
-| 12-month career gap | -0.45 | -0.45 |
-| Non-traditional education wording | -0.15 | -0.15 |
-| Signal A | -0.20 | -0.20 |
-| Signal C | -0.35 | -0.35 |
-| Signal C in frontline roles | -0.20 extra | -0.20 extra |
+The regression recovered every nonzero planted fit-score effect to three decimal places.
 
-The mean absolute coefficient-recovery error was below **0.001 fit-score points**.
+| Planted change | Expected effect | Estimated effect | Absolute error |
+|---|---:|---:|---:|
+| 12-month career gap | -0.45 | -0.45 | 0.000 |
+| Non-traditional education wording | -0.15 | -0.15 | 0.000 |
+| Signal A | -0.20 | -0.20 | 0.000 |
+| Signal C | -0.35 | -0.35 | 0.000 |
+| Signal C × frontline role | -0.20 | -0.20 | 0.000 |
 
-### What this result means
+![Planted and recovered effects](docs/figures/placebo_effect_recovery.svg)
 
-The current result is methodological: the experiment runs end to end, records the required metadata, rejects malformed outputs, and recovers known score differences correctly.
+This result shows that the estimator can recover known score differences under the locked placebo design.
 
-### What it does not mean
+It does not show that any live model produces these differences.
 
-The project has not yet shown that Claude or another live hiring model treats candidates differently. That conclusion requires a separate live-model run using the locked design. Live results should be reported whether they are positive, negative, or null.
+## Group-level placebo outcomes
 
-The full placebo report is in [`results/placebo/placebo_validation_report.md`](results/placebo/placebo_validation_report.md).
+The group means below reflect the planted test rules in `mock-auditor-v2`.
 
-## Roles in the audit
+![Mean placebo fit scores by group](docs/figures/placebo_group_scores.svg)
+
+| Signal group | Frontline mean score | Knowledge-work mean score | Frontline recommendation rate | Knowledge-work recommendation rate |
+|---|---:|---:|---:|---:|
+| Signal A | 6.85 | 6.75 | 92.5% | 80.0% |
+| Signal B | 7.05 | 6.95 | 100.0% | 100.0% |
+| Signal C | 6.50 | 6.60 | 50.0% | 57.5% |
+| Signal D | 7.05 | 6.95 | 100.0% | 100.0% |
+
+These values are useful for checking the pipeline because their direction and magnitude were set before the run.
+
+They must not be interpreted as demographic findings or evidence of real-world hiring bias.
+
+## What the completed study establishes
+
+The placebo validation establishes that the repository can:
+
+- generate a balanced set of matched synthetic resumes;
+- randomize and run repeated screening evaluations;
+- record model, prompt, timing, trial, and configuration metadata;
+- reject malformed or incomplete responses;
+- preserve all valid observations;
+- estimate fit-score and recommendation models;
+- cluster standard errors by matched resume;
+- apply Benjamini-Hochberg false-discovery-rate correction;
+- recover known effects from the completed 1,280-row run.
+
+## What remains untested
+
+The repository does **not** yet establish whether Claude or another live screening model treats equivalent candidates differently.
+
+That question requires a separately reported live-model run using the locked design. Positive, negative, and null findings must all be retained.
+
+## Audit sample
+
+The completed validation used four synthetic job templates anchored to O*NET-SOC occupations.
 
 | Occupational group | Synthetic target role | O*NET-SOC anchor |
 |---|---|---|
@@ -87,25 +94,25 @@ The full placebo report is in [`results/placebo/placebo_validation_report.md`](r
 | Knowledge work | Strategy Analyst | 13-1111.00 |
 | Knowledge work | Product Operations Manager | 13-1082.00 |
 
-These are standardized research templates, not real applicants or job postings.
+Within each template, experience, skills, education level, work history, target role, and quantified achievements stay fixed.
 
-## How the analysis works
+The audit varies the experimental name-signal group, education-pathway wording, career-gap condition, occupation tier, temperature, and trial number.
 
-The main models estimate fit score and recommendation outcomes using:
+## Estimation
 
-- candidate-signal indicators;
+The reported models include:
+
+- signal-group indicators;
 - signal-by-frontline interactions;
 - education-pathway and career-gap terms;
-- job-template fixed effects;
+- template fixed effects;
 - temperature fixed effects;
 - standard errors clustered by `resume_id`;
-- Benjamini-Hochberg q-values for multiple testing.
+- Benjamini-Hochberg q-values.
 
-The main labor-market question is whether the same candidate signal produces a different outcome in frontline roles than in knowledge-work roles.
+The full pre-analysis plan is in [`docs/preregistration.md`](docs/preregistration.md).
 
-The pre-analysis plan is in [`docs/preregistration.md`](docs/preregistration.md).
-
-## Reproduce the completed validation
+## Reproduce the completed results
 
 ```bash
 python -m venv .venv
@@ -121,40 +128,38 @@ compas-analyze \
 pytest -q
 ```
 
-You can also run the full sequence with:
+Run the full sequence with:
 
 ```bash
 bash scripts/run_full_validation.sh
 ```
 
-## Run the live Claude audit
+The committed results are in [`results/placebo/`](results/placebo/).
 
-```bash
-pip install -e ".[api]"
-export ANTHROPIC_API_KEY="your-key"
-export ANTHROPIC_MODEL="your-locked-model-id"
+## Result files
 
-compas-generate --config config/audit.yaml
-compas-run --config config/audit.yaml --provider anthropic
-compas-analyze \
-  --input outputs/screening_results.csv \
-  --output-dir outputs/analysis
+```text
+results/placebo/data_quality.csv
+results/placebo/descriptive_summary.csv
+results/placebo/group_disparities.csv
+results/placebo/model_coefficients.csv
+results/placebo/placebo_effect_recovery.csv
+results/placebo/placebo_validation_report.md
+results/placebo/run_manifest.json
 ```
-
-The runner records the model name, temperature, trial, request order, timestamp, prompt hash, configuration hash, latency, raw response, and parser error. Lock the exact model identifier before the first paid request.
 
 ## Repository map
 
 ```text
 config/audit.yaml                         Experimental settings
 data/templates/resume_templates.csv       Synthetic role templates
-data/human_baseline/evaluator_schema.csv  Human-evaluation data format
+docs/figures/                             Result figures used in this README
 docs/preregistration.md                   Pre-analysis plan
 docs/methodology.md                       Estimation and limitations
 docs/data_sources.md                      Source notes
 docs/human_baseline_protocol.md           Blinded human comparison protocol
 src/compas_audit/generate.py              Resume generator
-src/compas_audit/providers.py             Placebo and Anthropic model clients
+src/compas_audit/providers.py             Placebo and Anthropic providers
 src/compas_audit/run_audit.py             Repeated screening run
 src/compas_audit/analyze.py               Regression and result tables
 results/placebo/                           Completed validation outputs
@@ -163,9 +168,9 @@ tests/test_pipeline.py                    Design and recovery tests
 
 ## Data and ethics
 
-All candidates are synthetic. The signal groups describe experimental stimuli, not verified identities. Names should be perception-tested before any demographic interpretation.
+All candidates are synthetic. Signal labels describe experimental stimuli, not verified identities. Names require perception testing before demographic interpretation.
 
-Do not use this code to make real hiring decisions. Keep null results, failed responses, prompts, exclusions, model identifiers, and run dates. Any field experiment involving real applicants or employers would require separate legal and institutional review.
+Do not use this code to make real hiring decisions. Preserve null results, failed responses, prompts, exclusions, model identifiers, and run dates.
 
 See [`docs/data_sources.md`](docs/data_sources.md), [`docs/human_baseline_protocol.md`](docs/human_baseline_protocol.md), and [`CITATION.cff`](CITATION.cff).
 
