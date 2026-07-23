@@ -83,6 +83,25 @@ The repository does **not** yet establish whether Claude or another live screeni
 
 That question requires a separately reported live-model run using the locked design. Positive, negative, and null findings must all be retained.
 
+## Name-signal validation status
+
+The eight configured names are currently **candidate stimuli**, not validated demographic signals.
+
+Before a live audit, COMPAS now requires two checks:
+
+1. **Official source screening** using the complete 2020 Census first-name and last-name tables and SSA first-name frequencies by birth year.
+2. **A separate perception pretest** with approximately 100 to 200 respondents rating perceived race or ethnicity, perceived gender, familiarity, socioeconomic impression, and confidence.
+
+Census and SSA associations alone are not enough. Every name must show strong perception agreement and acceptable familiarity and socioeconomic balance.
+
+The current registry is marked pending. A live Anthropic run will stop unless all configured names pass:
+
+```bash
+compas-validate-names --config config/audit.yaml
+```
+
+The full process is documented in [`docs/name_signal_validation_protocol.md`](docs/name_signal_validation_protocol.md). Until it is completed, results must use the neutral labels `signal_a` through `signal_d`.
+
 ## Audit sample
 
 The completed validation used four synthetic job templates anchored to O*NET-SOC occupations.
@@ -152,29 +171,34 @@ results/placebo/run_manifest.json
 ## Repository map
 
 ```text
-config/audit.yaml                         Experimental settings
-data/templates/resume_templates.csv       Synthetic role templates
-docs/figures/                             Result figures used in this README
-docs/preregistration.md                   Pre-analysis plan
-docs/methodology.md                       Estimation and limitations
-docs/data_sources.md                      Source notes
-docs/human_baseline_protocol.md           Blinded human comparison protocol
-scripts/make_result_figures.py             Rebuilds figures from result tables
-src/compas_audit/generate.py              Resume generator
-src/compas_audit/providers.py             Placebo and Anthropic providers
-src/compas_audit/run_audit.py             Repeated screening run
-src/compas_audit/analyze.py               Regression and result tables
-results/placebo/                           Completed validation outputs
-tests/test_pipeline.py                    Design and recovery tests
+config/audit.yaml                              Experimental settings and validation thresholds
+data/name_validation/name_candidates.csv       Census/SSA source-screen registry
+data/name_validation/perception_responses.csv  Perception-survey response template
+data/templates/resume_templates.csv            Synthetic role templates
+docs/figures/                                  Result figures used in this README
+docs/name_signal_validation_protocol.md        Name-screening and perception-pretest procedure
+docs/preregistration.md                        Pre-analysis plan
+docs/methodology.md                            Estimation and limitations
+docs/data_sources.md                           Source notes
+docs/human_baseline_protocol.md                Blinded human comparison protocol
+scripts/make_result_figures.py                  Rebuilds figures from result tables
+src/compas_audit/name_validation.py            Name approval and live-run gate
+src/compas_audit/generate.py                   Resume generator
+src/compas_audit/providers.py                  Placebo and Anthropic providers
+src/compas_audit/run_audit.py                  Repeated screening run
+src/compas_audit/analyze.py                    Regression and result tables
+results/placebo/                                Completed validation outputs
+tests/test_pipeline.py                         Design and recovery tests
+tests/test_name_validation.py                  Name-validation tests
 ```
 
 ## Data and ethics
 
-All candidates are synthetic. Signal labels describe experimental stimuli, not verified identities. Names require perception testing before demographic interpretation.
+All candidates are synthetic. Signal labels describe experimental stimuli, not verified identities. Passing a perception pretest would validate how respondents perceived a name under the study conditions; it would not establish anyone's actual identity.
 
 Do not use this code to make real hiring decisions. Preserve null results, failed responses, prompts, exclusions, model identifiers, and run dates.
 
-See [`docs/data_sources.md`](docs/data_sources.md), [`docs/human_baseline_protocol.md`](docs/human_baseline_protocol.md), and [`CITATION.cff`](CITATION.cff).
+See [`docs/data_sources.md`](docs/data_sources.md), [`docs/name_signal_validation_protocol.md`](docs/name_signal_validation_protocol.md), [`docs/human_baseline_protocol.md`](docs/human_baseline_protocol.md), and [`CITATION.cff`](CITATION.cff).
 
 ## License
 
