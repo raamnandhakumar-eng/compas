@@ -1,0 +1,9 @@
+candidate_id,signal_group,full_name,perceived_name_signal,valid_respondents,modal_perceived_group,group_agreement,modal_perceived_gender,gender_agreement,mean_familiarity,mean_socioeconomic_status,median_confidence,mean_unusual,source_screen_complete,intended_group_match,intended_gender_match,approved_for_live_audit
+arjun_patel,signal_a,Arjun Patel,South Asian,0,,0.0,,0.0,,,,,True,False,False,False
+rohan_shah,signal_a,Rohan Shah,South Asian,0,,0.0,,0.0,,,,,True,False,False,False
+ethan_miller,signal_b,Ethan Miller,White,0,,0.0,,0.0,,,,,True,False,False,False
+lucas_bennett,signal_b,Lucas Bennett,White,0,,0.0,,0.0,,,,,True,False,False,False
+jamal_reed,signal_c,Jamal Reed,Black,0,,0.0,,0.0,,,,,True,False,False,False
+darius_cole,signal_c,Darius Cole,Black,0,,0.0,,0.0,,,,,True,False,False,False
+carlos_garcia,signal_d,Carlos Garcia,Hispanic or Latino,0,,0.0,,0.0,,,,,True,False,False,False
+mateo_rodriguez,signal_d,Mateo Rodriguez,Hispanic or Latino,0,,0.0,,0.0,,,,,True,False,False,False
