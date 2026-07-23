@@ -1,86 +1,120 @@
-# Pre-analysis plan
+# Preregistered analysis plan
 
-## Research question
+This plan governs the confirmatory live Claude audit. It must not be changed after viewing live treatment results unless the change is dated and labeled exploratory in `docs/deviations_from_preregistration.md`.
 
-Holding stated qualifications constant, do controlled resume signals change an LLM's fit score or interview recommendation, and do those changes differ between frontline and knowledge-work roles?
+## Primary research question
+
+Holding qualifications fixed, do perceived name signals, a 12-month career gap, or a non-traditional education pathway change Claude's fit score, interview recommendation, or confidence, and do those effects differ between frontline and knowledge-work occupations?
 
 ## Confirmatory hypotheses
 
-1. At least one name-signal group differs from the locked reference group (`signal_b`) in mean fit score.
-2. A 12-month career gap lowers mean fit score and recommendation probability.
-3. Non-traditional education wording lowers mean fit score and recommendation probability.
-4. At least one signal penalty differs between frontline and knowledge-work templates.
+All tests are two-sided and all null results will be reported.
 
-All hypotheses are two-sided. Null results will be reported.
+1. At least one perceived-name-signal group differs from the reference group (`signal_b`) in fit score or recommendation probability.
+2. A 12-month career gap changes fit score or recommendation probability.
+3. A non-traditional education pathway changes fit score or recommendation probability.
+4. At least one treatment effect differs between frontline and knowledge-work occupations.
 
-## Name-signal validation lock
+## Name-validation lock
 
-The configured names are neutral experimental signals until they pass a separate validation stage.
+Names are experimental **perceived name signals**, not actual demographic identities.
 
-Before a live model run:
+Before a live run:
 
-1. screen first and last names with the complete 2020 Census name files;
-2. record first-name frequency by the preregistered birth-year range using SSA data;
-3. lock the intended perceived group and perceived gender for each name;
-4. collect approximately 100 to 200 perception ratings per name;
-5. apply the thresholds in `config/audit.yaml` without changing them after seeing results.
+1. source-screen first and last names with complete published Census tables for names occurring approximately 100 or more times;
+2. record SSA first-name frequency for the locked source period;
+3. recruit 100 to 200 respondents for a separate perception pretest;
+4. measure perceived race or ethnicity, perceived gender, familiarity, perceived socioeconomic status, confidence, and unusualness;
+5. apply the following rules without changing them after inspecting responses:
+   - minimum 100 valid responses per name;
+   - at least 70% intended-group agreement;
+   - at least 70% intended-gender agreement;
+   - median confidence of at least 4/5;
+   - no between-group range above 0.75 points for socioeconomic status, familiarity, or unusualness.
 
-The pretest measures perceived race or ethnicity, perceived gender, familiarity, socioeconomic impression, and classification confidence. Every configured name must receive `approved_for_live_audit = true` from `compas-validate-names` before a live run.
+Every configured name must have `approved_for_live_audit = true` before the live runner will start.
 
-The full procedure is in [`docs/name_signal_validation_protocol.md`](name_signal_validation_protocol.md).
+## Confirmatory sample
 
-## Design
+- 8 occupations: 4 frontline or operational and 4 knowledge-work
+- 4 base profiles per occupation
+- 32 matched base profiles
+- 4 perceived-name-signal groups
+- 2 career-gap conditions: 0 and 12 months
+- 2 education-pathway conditions: traditional and non-traditional
+- 512 unique matched resumes
+- 5 trials per resume
+- 1 locked primary temperature
+- **2,560 planned evaluations**
 
-- 4 qualification-matched role templates
-- 8 synthetic candidate names across 4 signal groups
-- 2 education-pathway conditions
-- 2 career-gap conditions
-- 128 unique resumes
-- 2 temperatures
-- 5 repeated trials per resume-temperature cell
-- 1,280 planned evaluations per model
-
-Execution order is randomized with the locked seed. The prompt and configuration are hashed. Malformed responses are retained as failures and excluded from outcome regressions only under the documented parsing rule.
+Within a matched set, experience, skills, achievements, employer history, education level, job title, target role, formatting, and resume length are held fixed. Only the assigned treatment changes.
 
 ## Primary outcomes
 
 1. Fit score from 1 to 10
 2. Binary interview recommendation
+3. Confidence score from 0 to 1
 
-Secondary outcomes are model confidence, parser-failure rate, within-resume score variance, and coded risk-factor language.
+## Secondary outcomes
 
-## Estimation
+- response length;
+- refusal rate;
+- parser-failure rate;
+- within-resume variance across repeated calls;
+- predefined explanation themes.
 
-The locked linear specification includes:
+Generated explanations are secondary and will not replace the structured primary outcomes.
 
-- signal-group indicators, with `signal_b` as the reference;
-- signal-group by frontline interactions;
-- non-traditional education and its frontline interaction;
-- career gap and its frontline interaction;
-- template fixed effects;
-- temperature fixed effects.
+## Execution and stopping rule
 
-Standard errors are clustered by `resume_id` because each matched resume is evaluated repeatedly. Benjamini-Hochberg q-values control the false discovery rate across reported coefficients. Binary recommendations are estimated with a linear probability model for interpretability; logit is a robustness check when convergence permits.
+Evaluation order will be randomized across all treatments before the first API request. One treatment group will not be run in a separate time block. The exact model ID, API version, prompt version, full prompts, temperature, trial number, latency, raw response, parser status, and error type will be retained.
 
-## Exclusions
+All 2,560 observations will be attempted once. Failures and refusals will be preserved. The experiment will not stop early and unfavorable observations will not be selectively rerun. Prompts and the exact model ID will not change during the confirmatory run.
 
-A trial is excluded from outcome estimation only if:
+## Exclusion and failure rules
 
-- the provider request failed;
+A response is excluded from structured-outcome regression only when:
+
+- the provider request fails;
 - no JSON object can be parsed;
 - a required field is missing;
 - fit score is outside 1 to 10;
 - confidence is outside 0 to 1;
 - recommendation is not Boolean.
 
-Failure rates are still reported by signal group and occupational tier.
+Every failed response remains in the raw data. Failure and refusal rates are reported by treatment and occupation. A sensitivity analysis treats failed recommendations as not recommended.
 
-## Interpretation rule
+## Primary model specification
 
-A detected coefficient is evidence about the specified model, prompt, date, and synthetic stimuli. It is not proof of unlawful discrimination, intent, employer behavior, or a person's actual protected identity.
+Fit score and confidence are estimated using linear regression. Interview recommendations are estimated using a linear probability model for the primary marginal-effect presentation and logistic regression as a robustness check.
 
-Name-based coefficients may be described using demographic language only when the name stimuli have passed the preregistered perception pretest. Otherwise, they remain `signal_a` through `signal_d`.
+The locked specification includes:
 
-## Status
+- perceived-name-signal indicators, with `signal_b` as reference;
+- perceived-name-signal × frontline interactions;
+- 12-month career-gap indicator and its frontline interaction;
+- non-traditional pathway indicator and its frontline interaction;
+- matched-set fixed effects;
+- occupation fixed effects;
+- temperature fixed effects;
+- standard errors clustered by matched resume.
 
-The placebo validation is complete. The current names have not completed source screening or the perception pretest. The live-model confirmatory analysis has not been run in this repository as of July 23, 2026.
+Benjamini-Hochberg correction controls the false discovery rate across the preregistered treatment and interaction coefficients. Effect sizes are reported with 95% confidence intervals.
+
+## Robustness checks
+
+- logistic regression for recommendations;
+- randomization-inference test within matched sets;
+- leave-one-occupation-out estimates;
+- valid-responses-only and failed-as-not-recommended specifications;
+- observed variance across repeated calls;
+- treatment effects by occupation;
+- parser failure and refusal comparisons by treatment.
+
+## Interpretation
+
+Results concern one exact model ID, prompt, run period, and set of synthetic occupations. They do not establish intent, unlawful discrimination, employer behavior, a person's actual identity, or economy-wide labor-market effects. Economic interpretation is limited to possible implications for hiring access, career interruptions, non-traditional education, occupational mobility, and algorithmic gatekeeping within this audit design.
+
+## Current status
+
+The original 1,280-evaluation placebo validation is complete. Public-source screening has been populated, but the perception pretest is not completed. The 2,560-evaluation live Claude audit and human benchmark have not been run.
