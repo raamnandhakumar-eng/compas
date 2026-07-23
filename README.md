@@ -2,163 +2,221 @@
 
 **Candidate Outcome Measurement and Prompt Audit Suite**
 
-COMPAS is a reproducible audit of whether a resume-screening language model changes its judgments when controlled candidate signals change and qualifications remain fixed.
+COMPAS is a reproducible labor-market audit of whether a resume-screening language
+model changes its judgments when controlled candidate signals change and qualifications
+remain fixed.
 
-> This project is unrelated to the criminal-risk assessment system also called COMPAS. A distinct repository name is under consideration to reduce confusion.
+> This project is unrelated to the criminal-risk assessment system also called COMPAS.
+> A distinct repository name is under consideration to reduce confusion.
 
-## Main research question
+## Research question
 
-**Holding qualifications fixed, do perceived name signals, a 12-month career gap, or a non-traditional education pathway change Claude's fit score, interview recommendation, or confidence—and do those effects differ between frontline and knowledge-work occupations?**
+**Holding qualifications fixed, do a 12-month career gap, a non-traditional education
+pathway, or validated perceived-name signals change a screening model's fit score,
+interview recommendation, or confidence—and do those effects differ between frontline
+and knowledge-work occupations?**
+
+## Reviewer quick start
+
+For a concise overview of the contribution, empirical design, research judgment, and
+public-output path, read [`FELLOWSHIP_RESEARCH_BRIEF.md`](FELLOWSHIP_RESEARCH_BRIEF.md).
+
+The project now has two explicitly separated tracks:
+
+| Track | Question | Status | Planned scale |
+|---|---|---|---:|
+| Core labor-market audit | Career gap × education pathway × occupational context | Ready for a live run; not yet run | 640 evaluations |
+| Name-signal extension | Validated perceived-name signals plus the core treatments | Blocked pending a successful replacement pretest | 2,560 evaluations |
+
+This separation was locked before any live model output was observed. It preserves the
+failed name pretest rather than weakening its thresholds, while allowing the
+independently identified labor-market questions to proceed.
 
 ## Current status
 
 > **Pipeline validation:** Complete  
+> **Core audit design:** Locked and executable  
+> **Core live audit:** Not run  
 > **Name-source screening:** Complete  
-> **Perception pretest:** Submitted; not approved  
-> **Live Claude audit:** Blocked; not run  
+> **First perception pretest:** Submitted; not approved  
+> **Name-signal live extension:** Blocked  
 > **Human benchmark:** Not run
 
-The repository contains completed placebo results, the locked infrastructure for the confirmatory study, and a non-approving perception-pretest outcome. It does not contain live Claude findings.
+No live Claude findings are reported in this repository.
+
+## Why the split is methodologically important
+
+The first 150-person name-perception pretest strongly recognized the intended signals,
+but failed the preregistered balance rules for familiarity, perceived socioeconomic
+status, and unusualness. The export also lacked consent and attention-check fields.
+
+The repository therefore does not:
+
+- relax thresholds after seeing the results;
+- relabel simulated responses as human evidence;
+- publish participant-level data without documented sharing permission;
+- run the name-signal audit with unapproved stimuli.
+
+Instead, it records the non-approving outcome, defines a replacement-name recovery
+procedure, and separates the estimable core audit from the gated extension.
+
+## Core labor-market audit
+
+The core track tests:
+
+1. a 12-month career gap;
+2. a traditional versus non-traditional education pathway;
+3. whether either treatment differs between frontline and knowledge-work occupations.
+
+The design uses:
+
+- **8 occupations**: 4 frontline or operational and 4 knowledge-work;
+- **4 base profiles per occupation**;
+- **32 matched base profiles**;
+- **2 career-gap conditions**;
+- **2 education-pathway conditions**;
+- **128 unique matched resumes**;
+- **5 repeated trials per resume**;
+- **640 planned evaluations**.
+
+A single control name is held fixed within each matched set. Names alternate across
+profile slots but no name coefficient is estimated. The full locked plan is in
+[`docs/core_audit_preregistration.md`](docs/core_audit_preregistration.md).
+
+### Reproduce the core placebo
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+make core-reproduce
+```
+
+### Run the core live audit
+
+```bash
+pip install -e ".[api]"
+export ANTHROPIC_API_KEY="..."
+export ANTHROPIC_MODEL="exact-model-id"
+make core-live
+```
+
+The live runner records the exact model ID, API version, date, temperature, prompt
+version, prompts, trial number, latency, raw response, parser status, and error type.
+Evaluation order is randomized, failures and refusals are retained, and selective
+reruns are prohibited.
 
 ## Pipeline validation
 
-The completed placebo run tested whether the software could generate matched resumes, randomize evaluations, preserve raw responses, reject malformed outputs, estimate the preregistered models, and recover known effects.
+The deterministic mock-provider benchmark validates matched-resume generation,
+randomized execution, response parsing, failure retention, estimation, and coefficient
+recovery.
 
-The run completed **1,280 of 1,280 evaluations**, with **0 parser failures** across **128 matched resumes**. Every nonzero planted fit-score effect was recovered to three decimal places.
+The original public placebo report contains:
 
-These are engineering and estimator-validation results from a deterministic mock provider. They are not findings about Claude, employers, or real applicants.
+- **1,280 of 1,280 completed evaluations**;
+- **0 parser failures**;
+- **128 matched resumes**;
+- exact recovery of every nonzero planted fit-score effect to three decimal places.
 
-Detailed placebo tables are kept in [`results/placebo/placebo_validation_report.md`](results/placebo/placebo_validation_report.md).
+These are engineering and estimator-validation results. They are not findings about
+Claude, employers, or actual applicants.
 
-## Name validation
+See [`results/placebo/placebo_validation_report.md`](results/placebo/placebo_validation_report.md).
+
+## Name-signal extension
 
 Names are treated as **perceived name signals**, not actual demographic identities.
 
-The source registry contains two names for each of four experimental groups. It records first-name and surname counts, group shares, first-name sex shares, SSA frequency, source year, source file, and screening status.
-
 Source screening uses:
 
-- **complete published tables for names occurring approximately 100 or more times** in the 2020 Census;
-- Census first-name tables by race and Hispanic origin;
-- Census first-name tables by sex;
-- Census surname tables by race and Hispanic origin;
-- SSA first-name frequencies by birth year.
+- complete published 2020 Census first-name tables by race and Hispanic origin;
+- 2020 Census first-name tables by sex;
+- complete published Census surname tables;
+- SSA national first-name frequencies.
 
-Census counts and percentages are aggregate statistics and include disclosure-protection adjustments. The research files may contain negative values created by the disclosure-avoidance process. These data do not identify a person or establish anyone's race, ethnicity, gender, nationality, or socioeconomic status.
+Census values are aggregate statistics and may include disclosure-protection
+adjustments. They do not identify a person or establish anyone's identity.
 
-The public-source registry is populated in [`data/name_validation/name_candidates.csv`](data/name_validation/name_candidates.csv). Source screening is complete, but no name is approved for the live audit until the perception pretest passes every locked rule.
+### Locked approval rules
 
-### Locked perception-pretest rules
+A final name stimulus requires:
 
-Approximately 100 to 200 respondents rate:
+- at least 100 valid responses;
+- at least 70% intended-group agreement;
+- at least 70% intended-gender agreement;
+- median confidence of at least 4/5;
+- between-group range no greater than 0.75 for familiarity;
+- between-group range no greater than 0.75 for perceived socioeconomic status;
+- between-group range no greater than 0.75 for unusualness.
 
-- perceived race or ethnicity;
-- perceived gender;
-- familiarity;
-- perceived socioeconomic status;
-- confidence;
-- whether the name seems unusual.
+Every name must have `approved_for_live_audit = true` before the name-signal extension
+can run.
 
-A name requires at least 100 valid responses, at least 70% intended-group agreement, at least 70% intended-gender agreement, median confidence of at least 4/5, and no major between-group imbalance in socioeconomic status, familiarity, or unusualness.
+### Submitted pretest outcome
 
-The production response schema and approval outputs are stored in:
+The submitted workbook contained **150 respondent IDs** and **1,200 complete ratings**.
+Every respondent rated all eight names, with no duplicate respondent-name pairs and no
+missing rating fields.
 
-- [`data/name_validation/perception_responses.csv`](data/name_validation/perception_responses.csv)
-- [`results/name_validation/name_summary.csv`](results/name_validation/name_summary.csv)
-- [`results/name_validation/name_balance_tests.csv`](results/name_validation/name_balance_tests.csv)
+Descriptively:
 
-The live runner stops automatically unless every configured perceived name signal passes.
+- intended-group agreement ranged from **88.0% to 97.3%**;
+- perceived-male agreement ranged from **94.0% to 98.7%**;
+- median confidence was at least **4/5** for every name.
 
-### Submitted survey outcome
+The study was not approved because:
 
-A submitted workbook contained **150 respondent IDs** and **1,200 complete name ratings**. Every respondent rated all eight names, with no duplicate respondent-name pairs and no missing rating fields.
+1. consent and attention-check eligibility could not be verified from the export;
+2. the balance ranges exceeded 0.75:
+   - familiarity: **0.947**;
+   - perceived socioeconomic status: **1.130**;
+   - unusualness: **1.713**.
 
-All eight names passed the name-level agreement, perceived-gender, sample-size, and confidence thresholds descriptively. Intended-group agreement ranged from **88.0% to 97.3%**, perceived-male agreement ranged from **94.0% to 98.7%**, and every median confidence score was at least **4/5**.
-
-The submission is **not approved** for two independent reasons:
-
-1. the export does not include consent or attention-check fields, so respondent eligibility cannot be established under the preregistered exclusion rules;
-2. the between-group balance ranges exceed the locked maximum of 0.75 points: **0.947 for familiarity, 1.130 for socioeconomic impression, and 1.713 for unusualness**.
-
-Raw participant-level rows are not committed to this public repository because data-sharing permission is not documented. Aggregate outputs and the data-quality review are stored in:
+Aggregate results are stored in:
 
 - [`results/name_validation/submitted_survey_name_summary.csv`](results/name_validation/submitted_survey_name_summary.csv)
 - [`results/name_validation/submitted_survey_balance_tests.csv`](results/name_validation/submitted_survey_balance_tests.csv)
 - [`results/name_validation/submitted_survey_validation_report.md`](results/name_validation/submitted_survey_validation_report.md)
 - [`data/name_validation/submitted_survey_manifest.csv`](data/name_validation/submitted_survey_manifest.csv)
 
-No threshold was changed after viewing these results. The live Claude audit remains blocked.
+Raw participant-level rows are not committed because public-sharing permission is not
+documented.
 
-### Simulated pretest for pipeline validation
+### Replacement-name procedure
 
-A deterministic 120-person panel simulation exercises the complete pretest workflow without being treated as participant evidence. Four simulated panel IDs fail the attention check, leaving 116 valid ratings per name. All eight names pass the preregistered agreement, confidence, familiarity, socioeconomic-status, and unusualness thresholds in this simulation.
+The recovery plan is documented in
+[`docs/name_pretest_recovery_plan.md`](docs/name_pretest_recovery_plan.md).
 
-The simulation never changes the real pretest status and forces `approved_for_live_audit = false`. Generate it with:
+After an expanded pilot, select a balanced panel with:
 
 ```bash
-make simulate-name-pretest
+compas-select-balanced-names \
+  --input results/name_validation/replacement_candidate_summary.csv
 ```
 
-The simulation method is documented in [`data/simulated/name_validation/README.md`](data/simulated/name_validation/README.md). Its summary, balance checks, and manifest are stored in [`results/simulated/name_validation/`](results/simulated/name_validation/). CI publishes the full 960-row response CSV as the `simulated-name-perception-study` artifact.
+The selector exhaustively searches feasible two-name panels, minimizes the largest
+balance range, and refuses approval when the best panel still exceeds a locked limit.
 
-## Planned live audit
+## Analysis
 
-The confirmatory design uses:
-
-- **8 occupations**: 4 frontline or operational and 4 knowledge-work;
-- **4 base profiles per occupation**;
-- **4 perceived-name-signal groups**;
-- **2 career-gap conditions**;
-- **2 education-pathway conditions**;
-- **5 repeated trials per resume**;
-- **512 unique matched resumes**;
-- **2,560 planned evaluations**.
-
-The occupation sample varies in wage, employment size, education requirements, industry setting, and occupational group. Public source fields are stored in [`data/occupations/occupation_registry.csv`](data/occupations/occupation_registry.csv).
-
-Within each matched set, experience, skills, achievements, employer history, education level, job title, target role, formatting, and resume length remain fixed. Only the assigned treatment changes.
-
-### Primary outcomes
+Primary outcomes:
 
 1. Fit score
 2. Interview recommendation
-3. Confidence score
+3. Confidence
 
-Response length, refusals, parser failures, repeated-call variance, and explanation themes are secondary outcomes.
+The analysis uses matched-set, occupation, and temperature fixed effects; standard
+errors clustered by resume; Benjamini-Hochberg correction; linear models; a logistic
+recommendation robustness model when estimable; failure sensitivity; treatment means;
+and 95% confidence intervals.
 
-### Analysis plan
+## Public data
 
-The locked analysis includes matched-set, occupation, and temperature fixed effects; standard errors clustered by matched resume; Benjamini-Hochberg correction; linear models for fit and confidence; a linear probability model and logistic regression for recommendations; randomization inference; leave-one-occupation-out analysis; failed-response sensitivity checks; and 95% confidence intervals.
+The occupation sample is grounded in O*NET and BLS fields stored in
+[`data/occupations/occupation_registry.csv`](data/occupations/occupation_registry.csv).
 
-The complete plan is in [`docs/preregistration.md`](docs/preregistration.md), and the preregistered power assumptions are in [`docs/power_analysis.md`](docs/power_analysis.md).
-
-## Live results
-
-**No live Claude results are reported.**
-
-Before a live run, the repository requires:
-
-1. completion and approval of the perception pretest;
-2. approval of every perceived name signal;
-3. an exact model ID supplied through `ANTHROPIC_MODEL`;
-4. the locked prompt, sample, temperature, and stopping rule.
-
-The runner preserves the exact model ID, API version, date, temperature, prompt version, full prompts, trial number, latency, raw response, parser status, and error type. Evaluation order is randomized, all failures and refusals are retained, and selective reruns are prohibited.
-
-## Human benchmark
-
-After the main live audit, the planned benchmark will recruit 3 to 5 hiring professionals or experienced managers to review approximately 100 blinded matched resumes. The comparison will measure human fit scores, recommendations, confidence, human-Claude agreement, and treatment effects in humans versus Claude.
-
-## Reproduce the repository
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements-lock.txt
-make reproduce
-```
-
-Public source files can be downloaded and rebuilt with:
+Public sources can be downloaded and rebuilt with:
 
 ```bash
 python scripts/download_public_data.py
@@ -166,19 +224,22 @@ python scripts/build_name_registry.py
 python scripts/build_occupation_registry.py
 ```
 
-The live run is deliberately separate:
-
-```bash
-export ANTHROPIC_API_KEY="..."
-export ANTHROPIC_MODEL="exact-model-id"
-make live
-```
-
 ## Research interpretation
 
-The study is designed to inform questions about labor-market access, occupational mobility, career interruptions, non-traditional education, frontline versus knowledge-work hiring, and algorithmic gatekeeping. Findings from eight occupations must not be generalized into economy-wide effects.
+The study is designed to inform questions about labor-market access, workforce
+re-entry, credential alternatives, occupational mobility, and algorithmic gatekeeping.
+Findings concern one model, prompt, run period, and synthetic occupational sample.
+They must not be generalized into employer intent, unlawful discrimination, individual
+identity, or economy-wide effects.
 
-See [`docs/limitations.md`](docs/limitations.md), [`docs/ethics_statement.md`](docs/ethics_statement.md), [`docs/model_card.md`](docs/model_card.md), and [`docs/deviations_from_preregistration.md`](docs/deviations_from_preregistration.md).
+See:
+
+- [`docs/core_audit_preregistration.md`](docs/core_audit_preregistration.md)
+- [`docs/preregistration.md`](docs/preregistration.md)
+- [`docs/deviations_from_preregistration.md`](docs/deviations_from_preregistration.md)
+- [`docs/limitations.md`](docs/limitations.md)
+- [`docs/ethics_statement.md`](docs/ethics_statement.md)
+- [`docs/model_card.md`](docs/model_card.md)
 
 ## License
 
