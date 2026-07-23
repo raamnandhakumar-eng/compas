@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "compas-llm-audit"
-version = "0.2.0"
+version = "0.3.0"
 description = "Reproducible audit of demographic and occupational signals in LLM resume screening"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -27,6 +27,7 @@ dev = ["pytest>=8.0", "ruff>=0.6"]
 compas-generate = "compas_audit.generate:main"
 compas-run = "compas_audit.run_audit:main"
 compas-analyze = "compas_audit.analyze:main"
+compas-validate-names = "compas_audit.name_validation:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
