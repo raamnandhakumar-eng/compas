@@ -24,6 +24,10 @@ def stable_id(*parts: object, length: int = 16) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:length]
 
 
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def extract_json_object(text: str) -> dict[str, Any]:
     """Parse a JSON object, tolerating surrounding prose or fenced blocks."""
     cleaned = text.strip()

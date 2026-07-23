@@ -1,0 +1,2 @@
+input_rows,valid_rows,failed_rows,unique_resumes,unique_templates,duplicate_run_ids
+1280,1280,0,128,4,0

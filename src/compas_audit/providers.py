@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import random
+import re
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -10,34 +12,68 @@ from typing import Protocol
 class ScreeningProvider(Protocol):
     model_name: str
 
-    def screen(self, system_prompt: str, user_prompt: str, temperature: float, max_tokens: int) -> str:
+    def screen(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+        run_key: str = "",
+    ) -> str:
         ...
 
 
 @dataclass
 class MockProvider:
-    """Deterministic provider for tests and end-to-end demonstrations."""
+    """Deterministic placebo provider with transparent planted effects."""
 
-    model_name: str = "mock-auditor-v1"
+    model_name: str = "mock-auditor-v2"
     seed: int = 42
 
-    def screen(self, system_prompt: str, user_prompt: str, temperature: float, max_tokens: int) -> str:
-        local_seed = hash((self.seed, user_prompt, round(temperature, 3))) & 0xFFFFFFFF
-        rng = random.Random(local_seed)
-        base = 7.0
+    def _rng(self, user_prompt: str, temperature: float, run_key: str) -> random.Random:
+        payload = f"{self.seed}|{user_prompt}|{temperature:.3f}|{run_key}"
+        digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+        return random.Random(int(digest[:16], 16))
+
+    def screen(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+        run_key: str = "",
+    ) -> str:
+        rng = self._rng(user_prompt, temperature, run_key)
+        base = 7.25
+        frontline = (
+            "Target role: Operations Manager\n" in user_prompt
+            or "Target role: Supply Chain Supervisor\n" in user_prompt
+        )
+
+        # Planted effects validate whether the analysis recovers known coefficients.
         if "Career break: 12 months" in user_prompt:
             base -= 0.45
         if "Non-traditional pathway" in user_prompt:
             base -= 0.15
-        if "Operations Manager" in user_prompt or "Supply Chain Supervisor" in user_prompt:
-            base += 0.1
-        score = min(10.0, max(1.0, base + rng.uniform(-0.2, 0.2) * (1 + temperature)))
+        if "Candidate: Asha Raman" in user_prompt or "Candidate: Priya Nair" in user_prompt:
+            base -= 0.20
+        if "Candidate: Jamal Reed" in user_prompt or "Candidate: Darius Cole" in user_prompt:
+            base -= 0.35
+            if frontline:
+                base -= 0.20
+        if frontline:
+            base += 0.10
+
+        trial_match = re.search(r"trial=(\d+)", run_key)
+        trial = int(trial_match.group(1)) if trial_match else 3
+        balanced_noise = (trial - 3) * 0.04 * (1 + temperature)
+        score = min(10.0, max(1.0, base + balanced_noise))
         payload = {
             "fit_score": round(score, 2),
             "recommend": score >= 6.5,
-            "confidence": round(min(0.95, 0.72 + rng.uniform(-0.04, 0.04)), 2),
+            "confidence": round(min(0.97, max(0.5, 0.76 + rng.gauss(0, 0.04))), 2),
             "strengths": ["Relevant experience", "Measurable operating results"],
-            "risk_factors": ["Validate role-specific depth"] if score < 7.2 else [],
+            "risk_factors": ["Validate role-specific depth"] if score < 6.8 else [],
             "reason": "The candidate shows relevant experience and measurable outcomes.",
         }
         return json.dumps(payload)
@@ -56,7 +92,14 @@ class AnthropicProvider:
         self.model_name = os.getenv("ANTHROPIC_MODEL", model_name)
         self._client = Anthropic(api_key=api_key)
 
-    def screen(self, system_prompt: str, user_prompt: str, temperature: float, max_tokens: int) -> str:
+    def screen(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        temperature: float,
+        max_tokens: int,
+        run_key: str = "",
+    ) -> str:
         response = self._client.messages.create(
             model=self.model_name,
             max_tokens=max_tokens,
@@ -64,7 +107,11 @@ class AnthropicProvider:
             system=system_prompt,
             messages=[{"role": "user", "content": user_prompt}],
         )
-        text_blocks = [block.text for block in response.content if getattr(block, "type", None) == "text"]
+        text_blocks = [
+            block.text
+            for block in response.content
+            if getattr(block, "type", None) == "text"
+        ]
         if not text_blocks:
             raise ValueError("Anthropic response did not contain a text block.")
         return "\n".join(text_blocks)
