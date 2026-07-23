@@ -1,0 +1,4 @@
+metric,between_group_range,maximum_allowed,complete,pass,data_origin,eligible_for_live_audit
+perceived_socioeconomic_status,0.1077586206896557,0.75,True,True,simulated_pipeline_test,False
+familiarity,0.05172413793103425,0.75,True,True,simulated_pipeline_test,False
+name_unusual,0.056034482758620996,0.75,True,True,simulated_pipeline_test,False
