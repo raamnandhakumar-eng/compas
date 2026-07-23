@@ -1,0 +1,19 @@
+field,value,status
+review_date,2026-07-23,recorded
+source_file,survey results.xlsx,recorded
+respondents,150,recorded
+names_per_respondent,8,recorded
+rating_rows,1200,recorded
+duplicate_respondent_name_pairs,0,recorded
+missing_rating_fields,0,recorded
+survey_platform,,missing
+recruitment_source,,missing
+survey_start_date,,missing
+survey_end_date,,missing
+country_or_target_population,,missing
+compensation,,missing
+consent_procedure,,missing
+attention_check_wording,,missing
+attention_check_result_by_respondent,,missing
+randomization_method,,missing
+raw_participant_data_committed_publicly,false,privacy safeguard
