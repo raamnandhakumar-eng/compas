@@ -2,225 +2,151 @@
 
 **Candidate Outcome Measurement and Prompt Audit Suite**
 
-COMPAS is a reproducible audit pipeline for testing whether resume-screening models change their decisions when candidate signals change but qualifications stay fixed.
+COMPAS is a reproducible audit of whether a resume-screening language model changes its judgments when controlled candidate signals change and qualifications remain fixed.
 
-This repository currently reports one completed result: a **1,280-evaluation placebo validation** of the software and econometric pipeline.
+> This project is unrelated to the criminal-risk assessment system also called COMPAS. A distinct repository name is under consideration to reduce confusion.
 
-> The placebo findings below are not findings about Claude, employers, or real applicants. A live Claude audit has not been run.
+## Main research question
 
-> This repository is unrelated to the criminal-risk assessment product also called COMPAS.
+**Holding qualifications fixed, do perceived name signals, a 12-month career gap, or a non-traditional education pathway change Claude's fit score, interview recommendation, or confidence—and do those effects differ between frontline and knowledge-work occupations?**
 
-## Real public data used for name screening
+## Current status
 
-The name-screening part of COMPAS is built around **real U.S. government data**, not invented demographic probabilities.
+> **Pipeline validation:** Complete  
+> **Name-source screening:** In progress  
+> **Perception pretest:** Not completed  
+> **Live Claude audit:** Not run  
+> **Human benchmark:** Not run
 
-The validation workflow uses:
+The repository currently contains completed placebo results and the locked infrastructure for the larger confirmatory study. It does not contain live Claude findings.
 
-- the complete **2020 U.S. Census first-name tables by race and Hispanic origin**;
-- the **2020 Census first-name tables by sex**;
-- the complete **2020 Census last-name tables by race and Hispanic origin**;
-- **Social Security Administration birth-name frequencies by year**.
+## Pipeline validation
 
-These are observed, aggregate public records. They are used to check whether each first name and surname is frequent enough and whether its broad Census and SSA patterns support inclusion in the perception study.
+The completed placebo run tested whether the software could generate matched resumes, randomize evaluations, preserve raw responses, reject malformed outputs, estimate the preregistered models, and recover known effects.
 
-This does not make a name an identity label. Census and SSA statistics cannot establish a person's race, ethnicity, gender, nationality, or socioeconomic status. For that reason, COMPAS also requires a separate perception survey with approximately 100 to 200 respondents.
+The run completed **1,280 of 1,280 evaluations**, with **0 parser failures** across **128 matched resumes**. Every nonzero planted fit-score effect was recovered to three decimal places.
 
-The current eight names remain marked **pending** until the official name-level values are populated in the registry and the human perception pretest is completed. Until then, the analysis uses the neutral labels `signal_a` through `signal_d`.
+These are engineering and estimator-validation results from a deterministic mock provider. They are not findings about Claude, employers, or real applicants.
 
-The public name data and the audit outcomes should not be confused:
+Detailed placebo tables are kept in [`results/placebo/placebo_validation_report.md`](results/placebo/placebo_validation_report.md).
 
-- **Name screening:** based on real Census and SSA aggregate data.
-- **Completed model results:** based on the deterministic placebo provider, not a live model.
+## Name validation
 
-## Completed results
+Names are treated as **perceived name signals**, not actual demographic identities.
 
-![Completed placebo validation](docs/figures/placebo_run_summary.svg)
+The source registry contains two names for each of four experimental groups. It records first-name and surname counts, group shares, first-name sex shares, SSA frequency, source year, source file, and screening status.
 
-The completed run used `mock-auditor-v2`, a deterministic test provider with known score changes planted in advance.
+Source screening uses:
 
-The purpose was simple: check whether the full pipeline could run without data loss and recover effects whose true values were already known.
+- **complete published tables for names occurring approximately 100 or more times** in the 2020 Census;
+- Census first-name tables by race and Hispanic origin;
+- Census first-name tables by sex;
+- Census surname tables by race and Hispanic origin;
+- SSA first-name frequencies by birth year.
 
-The run produced:
+Census counts and percentages are aggregate statistics and include disclosure-protection adjustments. The research files may contain negative values created by the disclosure-avoidance process. These data do not identify a person or establish anyone's race, ethnicity, gender, nationality, or socioeconomic status.
 
-- **1,280 successful evaluations out of 1,280 planned**;
-- **0 parser failures**;
-- **128 unique matched resumes**;
-- **4 occupational templates**;
-- **2 temperature settings**;
-- **5 repeated trials per resume-temperature cell**;
-- **0.000 mean absolute coefficient-recovery error**, rounded to three decimals.
+The public-source registry is populated in [`data/name_validation/name_candidates.csv`](data/name_validation/name_candidates.csv), but no name is approved for the live audit until the separate human perception pretest is complete.
 
-## Main finding
+### Locked perception-pretest rules
 
-The regression recovered every nonzero planted fit-score effect to three decimal places.
+Approximately 100 to 200 respondents will rate:
 
-| Planted change | Expected effect | Estimated effect | Absolute error |
-|---|---:|---:|---:|
-| 12-month career gap | -0.45 | -0.45 | 0.000 |
-| Non-traditional education wording | -0.15 | -0.15 | 0.000 |
-| Signal A | -0.20 | -0.20 | 0.000 |
-| Signal C | -0.35 | -0.35 | 0.000 |
-| Signal C × frontline role | -0.20 | -0.20 | 0.000 |
+- perceived race or ethnicity;
+- perceived gender;
+- familiarity;
+- perceived socioeconomic status;
+- confidence;
+- whether the name seems unusual.
 
-![Planted and recovered effects](docs/figures/placebo_effect_recovery.svg)
+A name requires at least 100 valid responses, at least 70% intended-group agreement, at least 70% intended-gender agreement, median confidence of at least 4/5, and no major between-group imbalance in socioeconomic status, familiarity, or unusualness.
 
-This result shows that the estimator can recover known score differences under the locked placebo design.
+The empty response template and current pending outputs are stored in:
 
-It does not show that any live model produces these differences.
+- [`data/name_validation/perception_responses.csv`](data/name_validation/perception_responses.csv)
+- [`results/name_validation/name_summary.csv`](results/name_validation/name_summary.csv)
+- [`results/name_validation/name_balance_tests.csv`](results/name_validation/name_balance_tests.csv)
 
-## Group-level placebo outcomes
+The live runner stops automatically unless every configured perceived name signal passes.
 
-The group means below reflect the planted test rules in `mock-auditor-v2`.
+## Planned live audit
 
-![Mean placebo fit scores by group](docs/figures/placebo_group_scores.svg)
+The confirmatory design uses:
 
-| Signal group | Frontline mean score | Knowledge-work mean score | Frontline recommendation rate | Knowledge-work recommendation rate |
-|---|---:|---:|---:|---:|
-| Signal A | 6.85 | 6.75 | 92.5% | 80.0% |
-| Signal B | 7.05 | 6.95 | 100.0% | 100.0% |
-| Signal C | 6.50 | 6.60 | 50.0% | 57.5% |
-| Signal D | 7.05 | 6.95 | 100.0% | 100.0% |
+- **8 occupations**: 4 frontline or operational and 4 knowledge-work;
+- **4 base profiles per occupation**;
+- **4 perceived-name-signal groups**;
+- **2 career-gap conditions**;
+- **2 education-pathway conditions**;
+- **5 repeated trials per resume**;
+- **512 unique matched resumes**;
+- **2,560 planned evaluations**.
 
-These values are useful for checking the pipeline because their direction and magnitude were set before the run.
+The occupation sample varies in wage, employment size, education requirements, industry setting, and occupational group. Public source fields are stored in [`data/occupations/occupation_registry.csv`](data/occupations/occupation_registry.csv).
 
-They must not be interpreted as demographic findings or evidence of real-world hiring bias.
+Within each matched set, experience, skills, achievements, employer history, education level, job title, target role, formatting, and resume length remain fixed. Only the assigned treatment changes.
 
-## What the completed study establishes
+### Primary outcomes
 
-The placebo validation establishes that the repository can:
+1. Fit score
+2. Interview recommendation
+3. Confidence score
 
-- generate a balanced set of matched synthetic resumes;
-- randomize and run repeated screening evaluations;
-- record model, prompt, timing, trial, and configuration metadata;
-- reject malformed or incomplete responses;
-- preserve all valid observations;
-- estimate fit-score and recommendation models;
-- cluster standard errors by matched resume;
-- apply Benjamini-Hochberg false-discovery-rate correction;
-- recover known effects from the completed 1,280-row run.
+Response length, refusals, parser failures, repeated-call variance, and explanation themes are secondary outcomes.
 
-## What remains untested
+### Analysis plan
 
-The repository does **not** yet establish whether Claude or another live screening model treats equivalent candidates differently.
+The locked analysis includes matched-set, occupation, and temperature fixed effects; standard errors clustered by matched resume; Benjamini-Hochberg correction; linear models for fit and confidence; a linear probability model and logistic regression for recommendations; randomization inference; leave-one-occupation-out analysis; failed-response sensitivity checks; and 95% confidence intervals.
 
-That question requires a separately reported live-model run using the locked design. Positive, negative, and null findings must all be retained.
+The complete plan is in [`docs/preregistration.md`](docs/preregistration.md), and the preregistered power assumptions are in [`docs/power_analysis.md`](docs/power_analysis.md).
 
-## Name-signal validation status
+## Live results
 
-The eight configured names are currently **candidate stimuli**, not validated demographic signals.
+**No live Claude results are reported.**
 
-Before a live audit, COMPAS requires two checks:
+Before a live run, the repository requires:
 
-1. **Official source screening** using the complete 2020 Census first-name and last-name tables and SSA first-name frequencies by birth year.
-2. **A separate perception pretest** with approximately 100 to 200 respondents rating perceived race or ethnicity, perceived gender, familiarity, socioeconomic impression, and confidence.
+1. completion of the perception pretest;
+2. approval of every perceived name signal;
+3. an exact model ID supplied through `ANTHROPIC_MODEL`;
+4. the locked prompt, sample, temperature, and stopping rule.
 
-Census and SSA associations alone are not enough. Every name must show strong perception agreement and acceptable familiarity and socioeconomic balance.
+The runner preserves the exact model ID, API version, date, temperature, prompt version, full prompts, trial number, latency, raw response, parser status, and error type. Evaluation order is randomized, all failures and refusals are retained, and selective reruns are prohibited.
 
-A live Anthropic run will stop unless all configured names pass:
+## Human benchmark
 
-```bash
-compas-validate-names --config config/audit.yaml
-```
+After the main live audit, the planned benchmark will recruit 3 to 5 hiring professionals or experienced managers to review approximately 100 blinded matched resumes. The comparison will measure human fit scores, recommendations, confidence, human-Claude agreement, and treatment effects in humans versus Claude.
 
-The full process is documented in [`docs/name_signal_validation_protocol.md`](docs/name_signal_validation_protocol.md).
-
-## Audit sample
-
-The completed validation used four synthetic job templates anchored to O*NET-SOC occupations.
-
-| Occupational group | Synthetic target role | O*NET-SOC anchor |
-|---|---|---|
-| Frontline / operational | Operations Manager | 11-1021.00 |
-| Frontline / operational | Supply Chain Supervisor | 13-1081.00 |
-| Knowledge work | Strategy Analyst | 13-1111.00 |
-| Knowledge work | Product Operations Manager | 13-1082.00 |
-
-Within each template, experience, skills, education level, work history, target role, and quantified achievements stay fixed.
-
-The audit varies the experimental name-signal group, education-pathway wording, career-gap condition, occupation tier, temperature, and trial number.
-
-## Estimation
-
-The reported models include:
-
-- signal-group indicators;
-- signal-by-frontline interactions;
-- education-pathway and career-gap terms;
-- template fixed effects;
-- temperature fixed effects;
-- standard errors clustered by `resume_id`;
-- Benjamini-Hochberg q-values.
-
-The full pre-analysis plan is in [`docs/preregistration.md`](docs/preregistration.md).
-
-## Reproduce the completed results
+## Reproduce the repository
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
-
-compas-generate --config config/audit.yaml
-compas-run --config config/audit.yaml --provider mock
-compas-analyze \
-  --input outputs/screening_results.csv \
-  --output-dir outputs/analysis
-python scripts/make_result_figures.py
-
-pytest -q
+pip install -r requirements-lock.txt
+make reproduce
 ```
 
-Run the full sequence with:
+Public source files can be downloaded and rebuilt with:
 
 ```bash
-bash scripts/run_full_validation.sh
+python scripts/download_public_data.py
+python scripts/build_name_registry.py
+python scripts/build_occupation_registry.py
 ```
 
-The committed results are in [`results/placebo/`](results/placebo/).
+The live run is deliberately separate:
 
-## Result files
-
-```text
-results/placebo/data_quality.csv
-results/placebo/descriptive_summary.csv
-results/placebo/group_disparities.csv
-results/placebo/model_coefficients.csv
-results/placebo/placebo_effect_recovery.csv
-results/placebo/placebo_validation_report.md
-results/placebo/run_manifest.json
+```bash
+export ANTHROPIC_API_KEY="..."
+export ANTHROPIC_MODEL="exact-model-id"
+make live
 ```
 
-## Repository map
+## Research interpretation
 
-```text
-config/audit.yaml                              Experimental settings and validation thresholds
-data/name_validation/name_candidates.csv       Census/SSA source-screen registry
-data/name_validation/perception_responses.csv  Perception-survey response template
-data/templates/resume_templates.csv            Synthetic role templates
-docs/figures/                                  Result figures used in this README
-docs/name_signal_validation_protocol.md        Name-screening and perception-pretest procedure
-docs/preregistration.md                        Pre-analysis plan
-docs/methodology.md                            Estimation and limitations
-docs/data_sources.md                           Source notes
-docs/human_baseline_protocol.md                Blinded human comparison protocol
-scripts/make_result_figures.py                  Rebuilds figures from result tables
-src/compas_audit/name_validation.py            Name approval and live-run gate
-src/compas_audit/generate.py                   Resume generator
-src/compas_audit/providers.py                  Placebo and Anthropic providers
-src/compas_audit/run_audit.py                  Repeated screening run
-src/compas_audit/analyze.py                    Regression and result tables
-results/placebo/                                Completed validation outputs
-tests/test_pipeline.py                         Design and recovery tests
-tests/test_name_validation.py                  Name-validation tests
-```
+The study is designed to inform questions about labor-market access, occupational mobility, career interruptions, non-traditional education, frontline versus knowledge-work hiring, and algorithmic gatekeeping. Findings from eight occupations must not be generalized into economy-wide effects.
 
-## Data and ethics
-
-All candidates are synthetic. Signal labels describe experimental stimuli, not verified identities. Passing a perception pretest would validate how respondents perceived a name under the study conditions; it would not establish anyone's actual identity.
-
-Do not use this code to make real hiring decisions. Preserve null results, failed responses, prompts, exclusions, model identifiers, and run dates.
-
-See [`docs/data_sources.md`](docs/data_sources.md), [`docs/name_signal_validation_protocol.md`](docs/name_signal_validation_protocol.md), [`docs/human_baseline_protocol.md`](docs/human_baseline_protocol.md), and [`CITATION.cff`](CITATION.cff).
+See [`docs/limitations.md`](docs/limitations.md), [`docs/ethics_statement.md`](docs/ethics_statement.md), [`docs/model_card.md`](docs/model_card.md), and [`docs/deviations_from_preregistration.md`](docs/deviations_from_preregistration.md).
 
 ## License
 

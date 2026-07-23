@@ -15,6 +15,13 @@ from .prompts import SYSTEM_PROMPT, screening_prompt
 from .providers import AnthropicProvider, MockProvider, ScreeningProvider
 
 REQUIRED_KEYS = {"fit_score", "recommend", "confidence", "strengths", "risk_factors", "reason"}
+REFUSAL_PHRASES = (
+    "cannot assist",
+    "can't assist",
+    "cannot evaluate",
+    "unable to evaluate",
+    "cannot make hiring",
+)
 
 
 def validate_result(payload: dict[str, Any]) -> dict[str, Any]:
@@ -51,6 +58,11 @@ def build_provider(name: str, model: str, seed: int) -> ScreeningProvider:
     raise ValueError(f"Unknown provider: {name}")
 
 
+def _looks_like_refusal(raw_response: str) -> bool:
+    lowered = raw_response.casefold()
+    return any(phrase in lowered for phrase in REFUSAL_PHRASES)
+
+
 def run_experiment(config_path: str, provider_name: str, limit: int | None = None) -> pd.DataFrame:
     config = load_config(config_path)
     if provider_name == "anthropic":
@@ -59,8 +71,7 @@ def run_experiment(config_path: str, provider_name: str, limit: int | None = Non
     resumes_path = Path(config.get("output_resumes", "outputs/resume_permutations.csv"))
     if not resumes_path.exists():
         raise FileNotFoundError(
-            f"Resume permutations not found: {resumes_path}. "
-            "Run compas-generate first."
+            f"Resume permutations not found: {resumes_path}. Run compas-generate first."
         )
 
     seed = int(config.get("seed", 42))
@@ -71,13 +82,15 @@ def run_experiment(config_path: str, provider_name: str, limit: int | None = Non
     provider_cfg = config.get("provider", {})
     provider = build_provider(
         provider_name,
-        str(provider_cfg.get("model", "claude-sonnet-4-20250514")),
+        str(provider_cfg.get("model", "set-via-ANTHROPIC_MODEL-before-live-run")),
         seed,
     )
     trials = int(config.get("trials_per_resume", 1))
     temperatures = [float(value) for value in config.get("temperatures", [0.0])]
     max_tokens = int(provider_cfg.get("max_tokens", 500))
     delay = float(provider_cfg.get("request_delay_seconds", 0.0))
+    api_version = str(provider_cfg.get("api_version", "unknown"))
+    prompt_version = str(provider_cfg.get("prompt_version", "unknown"))
 
     jobs: list[tuple[pd.Series, float, int]] = []
     for _, resume in resumes.iterrows():
@@ -89,45 +102,75 @@ def run_experiment(config_path: str, provider_name: str, limit: int | None = Non
     records: list[dict[str, Any]] = []
     for execution_order, job_index in enumerate(random_order, start=1):
         resume, temperature, trial = jobs[job_index]
-        prompt = screening_prompt(str(resume["target_role"]), str(resume["resume_text"]))
-        run_id = stable_id(resume["resume_id"], provider.model_name, temperature, trial)
+        user_prompt = screening_prompt(str(resume["target_role"]), str(resume["resume_text"]))
+        observation_id = stable_id(
+            resume["resume_id"],
+            provider.model_name,
+            temperature,
+            trial,
+        )
         started = time.perf_counter()
+        timestamp = datetime.now(timezone.utc)
         raw_response = ""
         error = ""
+        error_type = ""
+        parser_status = "not_attempted"
         parsed: dict[str, Any] = {}
         try:
             raw_response = provider.screen(
                 SYSTEM_PROMPT,
-                prompt,
+                user_prompt,
                 temperature,
                 max_tokens,
-                run_key=f"{run_id}|trial={trial}",
+                run_key=f"{observation_id}|trial={trial}",
             )
             parsed = validate_result(extract_json_object(raw_response))
+            parser_status = "parsed"
         except Exception as exc:
-            error = f"{type(exc).__name__}: {exc}"
+            error_type = type(exc).__name__
+            error = f"{error_type}: {exc}"
+            parser_status = "error"
 
         records.append(
             {
                 **resume.to_dict(),
-                "run_id": run_id,
+                "observation_id": observation_id,
+                "run_id": observation_id,
                 "execution_order": execution_order,
                 "provider": provider_name,
+                "exact_model_id": provider.model_name,
                 "model": provider.model_name,
+                "api_version": api_version,
+                "run_date": timestamp.date().isoformat(),
+                "timestamp_utc": timestamp.isoformat(),
                 "temperature": temperature,
+                "prompt_version": prompt_version,
+                "system_prompt": SYSTEM_PROMPT,
+                "user_prompt": user_prompt,
+                "trial_number": trial,
                 "trial": trial,
-                "timestamp_utc": datetime.now(timezone.utc).isoformat(),
                 "latency_seconds": round(time.perf_counter() - started, 4),
-                "prompt_sha256": sha256_text(SYSTEM_PROMPT + "\n" + prompt),
+                "prompt_sha256": sha256_text(SYSTEM_PROMPT + "\n" + user_prompt),
                 **parsed,
+                "response_length_chars": len(raw_response),
+                "refusal": int(_looks_like_refusal(raw_response)),
                 "raw_response": raw_response,
+                "parser_status": parser_status,
+                "error_type": error_type,
                 "error": error,
             }
         )
         if delay > 0:
             time.sleep(delay)
 
-    return pd.DataFrame.from_records(records).sort_values("execution_order").reset_index(drop=True)
+    results = (
+        pd.DataFrame.from_records(records)
+        .sort_values("execution_order")
+        .reset_index(drop=True)
+    )
+    if results["observation_id"].duplicated().any():
+        raise RuntimeError("Duplicate observation IDs were generated.")
+    return results
 
 
 def write_manifest(config_path: str, results: pd.DataFrame, output_path: Path) -> None:
@@ -137,17 +180,27 @@ def write_manifest(config_path: str, results: pd.DataFrame, output_path: Path) -
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "config_sha256": sha256_text(config_text),
         "provider": str(results["provider"].iloc[0]) if not results.empty else None,
-        "model": str(results["model"].iloc[0]) if not results.empty else None,
+        "exact_model_id": str(results["exact_model_id"].iloc[0]) if not results.empty else None,
+        "api_version": str(results["api_version"].iloc[0]) if not results.empty else None,
+        "prompt_version": str(results["prompt_version"].iloc[0]) if not results.empty else None,
         "rows": int(len(results)),
         "successful_rows": successful,
         "failed_rows": int(len(results) - successful),
+        "refusals": int(results["refusal"].sum()) if not results.empty else 0,
         "unique_resumes": int(results["resume_id"].nunique()) if not results.empty else 0,
+        "unique_occupations": int(results["occupation_id"].nunique()) if not results.empty else 0,
         "temperatures": (
             sorted(results["temperature"].dropna().unique().tolist())
             if not results.empty
             else []
         ),
-        "trials": sorted(results["trial"].dropna().unique().tolist()) if not results.empty else [],
+        "trials": (
+            sorted(results["trial_number"].dropna().unique().tolist())
+            if not results.empty
+            else []
+        ),
+        "randomized_execution_order": True,
+        "selective_reruns_permitted": False,
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
@@ -161,7 +214,7 @@ def main() -> None:
         "--limit",
         type=int,
         default=None,
-        help="Optional number of resumes for a smoke test.",
+        help="Optional number of resumes for a smoke test. Do not use for the confirmatory run.",
     )
     args = parser.parse_args()
 

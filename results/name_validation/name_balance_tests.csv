@@ -1,0 +1,4 @@
+metric,between_group_range,maximum_allowed,complete,pass
+perceived_socioeconomic_status,,0.75,False,False
+familiarity,,0.75,False,False
+name_unusual,,0.75,False,False

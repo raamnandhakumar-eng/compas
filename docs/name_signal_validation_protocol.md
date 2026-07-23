@@ -1,97 +1,65 @@
-# Name-signal validation protocol
+# Perceived-name-signal validation protocol
 
-The current COMPAS names are candidate stimuli. They have not yet been validated for demographic interpretation.
+The configured names are experimental stimuli, not actual demographic identities. A placebo run may use neutral signal codes, but a live audit cannot use demographic interpretation until every name passes both public-source screening and a separate human perception pretest.
 
-A name can be used in the placebo pipeline without this step because the placebo tests software behavior. A live audit that describes names as perceived demographic signals is blocked until every configured name passes the process below.
+## 1. Public-source screening
 
-## 1. Screen names with official frequency data
+Use **complete published tables for names occurring approximately 100 or more times** rather than a top-name list.
 
-Use the complete government files rather than a top-name list.
+Record from the 2020 Census:
 
-### U.S. Census Bureau
+- first-name count;
+- first-name race and Hispanic-origin shares;
+- first-name sex share;
+- surname count;
+- surname race and Hispanic-origin shares.
 
-Use the 2020 Census name tables to record:
+Census counts and percentages are aggregate statistics and include disclosure-protection adjustments. Research files may retain negative values created by the disclosure-avoidance process. These values do not identify individuals or establish the identity of anyone with a given name.
 
-- first-name frequency;
-- first-name race and Hispanic-origin percentages;
-- first-name sex percentages;
-- surname frequency;
-- surname race and Hispanic-origin percentages.
+Record SSA national first-name frequency from the locked birth-name archive. Avoid extremely rare names. Each experimental group must contain at least two names.
 
-The 2020 files cover first and last names reported at least 100 times. They are aggregate data and do not identify individuals or establish the identity of anyone with a given name.
+The populated registry is `data/name_validation/name_candidates.csv`. Passing this stage gives a row the status `source_screened_pending_pretest`; it does not approve the name for a live audit.
 
-Official source page:
+## 2. Lock intended perceptions before surveying
 
-- https://www.census.gov/topics/population/genealogy/data/2020_names.html
+For every name, preregister the intended perceived-name-signal group. Do not choose or revise the intended label after viewing survey responses.
 
-The older 2010 surname files may be kept as a historical comparison:
+The analysis uses neutral codes such as `signal_a` through `signal_d`. Public reporting must say **perceived name signal**, never actual race, ethnicity, or gender.
 
-- https://www.census.gov/data/developers/data-sets/surnames.html
+## 3. Perception pretest
 
-### Social Security Administration
+Recruit approximately 100 to 200 respondents. Show names without resumes, jobs, qualifications, treatment labels, or study hypotheses, and randomize name order.
 
-Use the national baby-name files to measure first-name frequency by year of birth:
-
-- https://www.ssa.gov/oact/babynames/limits.html
-
-Choose and preregister a birth-year range that is plausible for the experience level in the synthetic resumes. Sum the name count across that range and record it in `data/name_validation/name_candidates.csv`.
-
-A name passes the source screen only after the registry contains the Census and SSA fields and `source_screen_complete` is set to `true`.
-
-Government frequency data are a screening tool, not the final validation. They describe aggregate associations and naming patterns. They do not tell us how a name is perceived in the experiment.
-
-## 2. Lock the intended perception before surveying
-
-Before collecting responses, fill in these fields for every name:
-
-- `intended_perceived_group`;
-- `intended_perceived_gender`.
-
-Do not choose the intended label after looking at the survey results.
-
-The analysis continues to use neutral codes such as `signal_a` and `signal_b`. Public reporting should use language such as **perceived name signal**, never actual race, ethnicity, or gender.
-
-## 3. Run a separate perception pretest
-
-Recruit approximately 100 to 200 respondents. The sample should be appropriate for the labor market being studied and should not be drawn only from the research team or the model-audit participants.
-
-Show names without resumes, qualifications, job titles, or experimental labels. Randomize their order.
-
-For each name, ask respondents to report:
+For each name, measure:
 
 1. perceived race or ethnicity;
 2. perceived gender;
-3. familiarity with the name;
-4. socioeconomic impression;
-5. confidence in the classification.
+3. familiarity on a five-point scale;
+4. perceived socioeconomic status on a five-point scale;
+5. confidence on a five-point scale;
+6. whether the name seems unusual on a five-point scale.
 
-Use five-point scales for familiarity, socioeconomic impression, and confidence. Include informed consent and at least one attention check.
+Collect informed consent and at least one attention check. The response schema is `data/name_validation/perception_responses.csv`.
 
-The machine-readable response template is:
+## 4. Locked approval rules
 
-- `data/name_validation/perception_responses.csv`
+The thresholds were fixed before collecting responses. A name is approved only when:
 
-## 4. Approval rules
-
-The default thresholds are stored in `config/audit.yaml`.
-
-A name is approved only when:
-
-- the Census and SSA source screen is complete;
+- public-source screening is complete;
 - at least 100 valid respondents rated it;
-- the modal perceived group matches the preregistered intended group;
-- group agreement is at least 80%;
-- the modal perceived gender matches the preregistered intended gender;
-- gender agreement is at least 80%;
-- mean confidence is at least 3.5 out of 5;
-- mean familiarity is no more than 3.0 out of 5;
-- the range in mean socioeconomic impressions across signal groups is no more than 0.75 points.
+- the modal perceived group matches the preregistered signal;
+- intended-group agreement is at least 70%;
+- intended-gender agreement is at least 70%;
+- median confidence is at least 4/5;
+- the between-group range is no more than 0.75 points for perceived socioeconomic status;
+- the between-group range is no more than 0.75 points for familiarity;
+- the between-group range is no more than 0.75 points for unusualness.
 
-The socioeconomic check reduces the risk that a nominal demographic comparison is actually driven by class impressions. Thresholds may be changed before data collection, but they must be locked and reported.
+The balance checks reduce the risk that a nominal perceived-group comparison is driven by class, familiarity, or unusualness.
 
-## 5. Produce the validation summary
+## 5. Outputs and enforcement
 
-After completing the source registry and adding survey responses, run:
+Run:
 
 ```bash
 compas-validate-names --config config/audit.yaml
@@ -99,14 +67,11 @@ compas-validate-names --config config/audit.yaml
 
 This writes:
 
-```text
-outputs/name_validation_summary.csv
-```
+- `results/name_validation/name_summary.csv`
+- `results/name_validation/name_balance_tests.csv`
 
-The file reports respondent counts, modal perceptions, agreement rates, familiarity, socioeconomic impression, confidence, source-screen status, and final approval for every name.
-
-A live Anthropic run will stop with an error unless every configured name has `approved_for_live_audit = true` in that summary.
+The current files correctly show zero respondents and no approved names because the survey has not been conducted. A live Anthropic run stops unless every configured name has `approved_for_live_audit = true`.
 
 ## Interpretation
 
-Passing this protocol means that respondents consistently perceived the stimulus in the preregistered way under the survey conditions. It does not establish anyone's actual identity, prove that all audiences perceive the name the same way, or eliminate every cultural and socioeconomic association.
+Passing the protocol would show that respondents in the survey consistently perceived a stimulus in the preregistered way. It would not establish anyone's actual identity, guarantee the same perception in every population, or eliminate all cultural and socioeconomic associations.

@@ -32,6 +32,7 @@ jobs:
           cat ruff-results.json
           exit 1
       - run: pytest -q
+      - run: python scripts/power_analysis.py
       - run: compas-validate-names --config config/audit.yaml
       - run: compas-generate --config config/audit.yaml
       - run: compas-run --config config/audit.yaml --provider mock

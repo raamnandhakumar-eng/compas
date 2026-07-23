@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "compas-llm-audit"
-version = "0.3.0"
-description = "Reproducible audit of demographic and occupational signals in LLM resume screening"
+version = "0.4.0"
+description = "Reproducible audit of perceived resume signals in LLM screening"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
@@ -15,6 +15,7 @@ dependencies = [
   "numpy>=1.26",
   "pandas>=2.2",
   "pyyaml>=6.0",
+  "scipy>=1.13",
   "statsmodels>=0.14",
   "tabulate>=0.9",
 ]
