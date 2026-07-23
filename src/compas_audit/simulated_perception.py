@@ -139,6 +139,7 @@ def write_simulation(
     responses.to_csv(responses_output, index=False)
     summary.to_csv(summary_output, index=False)
     balance.to_csv(balance_output, index=False)
+    response_sha256 = hashlib.sha256(responses_output.read_bytes()).hexdigest()
 
     manifest = {
         "data_origin": DATA_ORIGIN,
@@ -151,6 +152,7 @@ def write_simulation(
             .size()
             .min()
         ),
+        "response_csv_sha256": response_sha256,
         "real_respondents": 0,
         "eligible_for_live_audit": False,
         "production_survey_file_modified": False,
