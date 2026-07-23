@@ -69,6 +69,18 @@ The empty response template and current pending outputs are stored in:
 
 The live runner stops automatically unless every configured perceived name signal passes.
 
+### Simulated pretest for pipeline validation
+
+A deterministic 120-person panel simulation exercises the complete pretest workflow without being treated as participant evidence. Four simulated panel IDs fail the attention check, leaving 116 valid ratings per name. All eight names pass the preregistered agreement, confidence, familiarity, socioeconomic-status, and unusualness thresholds in this simulation.
+
+The simulation never changes the real pretest status and forces `approved_for_live_audit = false`. Generate it with:
+
+```bash
+make simulate-name-pretest
+```
+
+The simulation method is documented in [`data/simulated/name_validation/README.md`](data/simulated/name_validation/README.md). Its summary, balance checks, and manifest are stored in [`results/simulated/name_validation/`](results/simulated/name_validation/). CI publishes the full 960-row response CSV as the `simulated-name-perception-study` artifact.
+
 ## Planned live audit
 
 The confirmatory design uses:

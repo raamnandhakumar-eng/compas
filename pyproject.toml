@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "compas-llm-audit"
-version = "0.4.0"
+version = "0.4.1"
 description = "Reproducible audit of perceived resume signals in LLM screening"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -29,6 +29,7 @@ compas-generate = "compas_audit.generate:main"
 compas-run = "compas_audit.run_audit:main"
 compas-analyze = "compas_audit.analyze:main"
 compas-validate-names = "compas_audit.name_validation:main"
+compas-simulate-name-pretest = "compas_audit.simulated_perception:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
