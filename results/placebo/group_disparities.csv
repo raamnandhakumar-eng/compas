@@ -1,0 +1,9 @@
+signal_group,occupation_tier,mean_fit_score,recommendation_rate,mean_confidence,observations,unique_resumes,fit_gap_from_tier_max
+signal_a,frontline,6.85,0.925,0.757125,160,16,-0.20000000000000018
+signal_a,knowledge,6.75,0.8,0.7621875,160,16,-0.20000000000000018
+signal_b,frontline,7.05,1.0,0.762375,160,16,0.0
+signal_b,knowledge,6.95,1.0,0.7651875,160,16,0.0
+signal_c,frontline,6.5,0.5,0.761,160,16,-0.5499999999999998
+signal_c,knowledge,6.6,0.575,0.757,160,16,-0.35000000000000053
+signal_d,frontline,7.05,1.0,0.761625,160,16,0.0
+signal_d,knowledge,6.95,1.0,0.7618125,160,16,0.0

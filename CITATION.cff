@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+title: "COMPAS: Candidate Outcome Measurement and Prompt Audit Suite"
+message: "If you use this software or design, please cite it using this metadata."
+type: software
+authors:
+  - family-names: Nandhakumar
+    given-names: Sriramkrishnan
+repository-code: "https://github.com/raamnandhakumar-eng/compas"
+url: "https://github.com/raamnandhakumar-eng/compas"
+version: 0.2.0
+date-released: 2026-07-23
+license: MIT
+keywords:
+  - algorithmic audit
+  - labor economics
+  - resume screening
+  - large language models
+  - responsible AI

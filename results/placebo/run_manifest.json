@@ -1,0 +1,21 @@
+{
+  "created_utc": "2026-07-23T18:41:35.071456+00:00",
+  "config_sha256": "1ecec404b0aca654a6047ac18e35bc6d2114e2c43878e474b365eb43dfc710b3",
+  "provider": "mock",
+  "model": "mock-auditor-v2",
+  "rows": 1280,
+  "successful_rows": 1280,
+  "failed_rows": 0,
+  "unique_resumes": 128,
+  "temperatures": [
+    0.0,
+    0.4
+  ],
+  "trials": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ]
+}

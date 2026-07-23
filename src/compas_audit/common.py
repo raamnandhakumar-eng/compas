@@ -24,6 +24,10 @@ def stable_id(*parts: object, length: int = 16) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:length]
 
 
+def sha256_text(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
 def extract_json_object(text: str) -> dict[str, Any]:
     """Parse a JSON object, tolerating surrounding prose or fenced blocks."""
     cleaned = text.strip()
@@ -40,12 +44,12 @@ def extract_json_object(text: str) -> dict[str, Any]:
         if not isinstance(parsed, dict):
             raise ValueError("Expected a JSON object.")
         return parsed
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as exc:
         start = cleaned.find("{")
         end = cleaned.rfind("}")
         if start < 0 or end <= start:
-            raise ValueError("Response did not contain a JSON object.")
+            raise ValueError("Response did not contain a JSON object.") from exc
         parsed = json.loads(cleaned[start : end + 1])
         if not isinstance(parsed, dict):
-            raise ValueError("Expected a JSON object.")
+            raise ValueError("Expected a JSON object.") from exc
         return parsed

@@ -3,11 +3,17 @@ trials_per_resume: 5
 temperatures: [0.0, 0.4]
 output_resumes: outputs/resume_permutations.csv
 output_results: outputs/screening_results.csv
+output_manifest: outputs/run_manifest.json
 
 provider:
   model: claude-sonnet-4-20250514
   max_tokens: 500
   request_delay_seconds: 0.0
+
+analysis:
+  reference_signal_group: signal_b
+  cluster_column: resume_id
+  fdr_alpha: 0.05
 
 signals:
   names:
