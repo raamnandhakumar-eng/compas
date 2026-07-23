@@ -15,49 +15,67 @@ SELECTIONS = {
         "production_supervisor",
         "frontline_operational",
         "High school diploma plus related work experience",
-        "Manufacturing supervision; operational decision-making; medium wage and large employment base.",
+        (
+            "Manufacturing supervision; operational decision-making; medium wage and "
+            "large employment base."
+        ),
     ),
     "29-1141": (
         "registered_nurse",
         "frontline_operational",
         "Bachelor's or associate degree plus state licensure",
-        "Frontline healthcare; high employment; licensed professional pathway and high interpersonal intensity.",
+        (
+            "Frontline healthcare; high employment; licensed professional pathway and "
+            "high interpersonal intensity."
+        ),
     ),
     "49-9071": (
         "maintenance_worker",
         "frontline_operational",
         "High school diploma with technical or on-the-job training",
-        "Hands-on facilities work; lower formal education requirement; very large employment base.",
+        (
+            "Hands-on facilities work; lower formal education requirement; very large "
+            "employment base."
+        ),
     ),
     "13-1081": (
         "logistician",
         "frontline_operational",
         "Bachelor's degree",
-        "Operational supply-chain role connecting planning, physical flows, vendors, and field execution.",
+        (
+            "Operational supply-chain role connecting planning, physical flows, vendors, "
+            "and field execution."
+        ),
     ),
     "13-1111": (
         "management_analyst",
         "knowledge_work",
         "Bachelor's degree",
-        "Advisory knowledge work; large employment base; analysis and executive communication.",
+        "Advisory knowledge work; large employment base; analysis and communication.",
     ),
     "13-1082": (
         "project_management_specialist",
         "knowledge_work",
         "Bachelor's degree",
-        "Cross-functional coordination role with broad industry coverage and a large employment base.",
+        (
+            "Cross-functional coordination role with broad industry coverage and a large "
+            "employment base."
+        ),
     ),
     "15-1211": (
         "computer_systems_analyst",
         "knowledge_work",
         "Bachelor's degree",
-        "Technical knowledge work combining requirements, systems analysis, and business processes.",
+        (
+            "Technical knowledge work combining requirements, systems analysis, and "
+            "business processes."
+        ),
     ),
     "13-2051": (
         "financial_analyst",
         "knowledge_work",
         "Bachelor's degree",
-        "Quantitative finance role with a high wage and an analytical screening context.",
+        "Quantitative finance role with a high wage and analytical screening context.",
     ),
 }
 
@@ -65,13 +83,17 @@ SELECTIONS = {
 def _read_first_excel(zip_path: Path, filename_contains: str) -> pd.DataFrame:
     with zipfile.ZipFile(zip_path) as archive:
         member = next(
-            name for name in archive.namelist() if filename_contains.casefold() in name.casefold()
+            name
+            for name in archive.namelist()
+            if filename_contains.casefold() in name.casefold()
         )
         return pd.read_excel(io.BytesIO(archive.read(member)))
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build the BLS and O*NET occupation registry.")
+    parser = argparse.ArgumentParser(
+        description="Build the BLS and O*NET occupation registry."
+    )
     parser.add_argument("--raw-dir", default="data/raw")
     parser.add_argument("--output", default="data/occupations/occupation_registry.csv")
     args = parser.parse_args()
@@ -114,7 +136,8 @@ def main() -> None:
         )
 
     registry = pd.DataFrame(rows)
-    if len(registry) != 8 or registry["occupation_group"].value_counts().nunique() != 1:
+    group_counts = registry["occupation_group"].value_counts()
+    if len(registry) != 8 or group_counts.nunique() != 1:
         raise ValueError("The registry must contain four occupations in each broad group.")
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
