@@ -16,7 +16,21 @@ jobs:
           cache: pip
       - run: python -m pip install --upgrade pip
       - run: pip install -e ".[dev]"
-      - run: ruff check .
+      - name: Run Ruff
+        id: ruff
+        continue-on-error: true
+        run: ruff check . --output-format=json > ruff-results.json
+      - name: Upload Ruff diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruff-results
+          path: ruff-results.json
+      - name: Enforce Ruff
+        if: steps.ruff.outcome == 'failure'
+        run: |
+          cat ruff-results.json
+          exit 1
       - run: pytest -q
       - run: compas-generate --config config/audit.yaml
       - run: compas-run --config config/audit.yaml --provider mock
