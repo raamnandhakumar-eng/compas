@@ -13,6 +13,22 @@ Holding stated qualifications constant, do controlled resume signals change an L
 
 All hypotheses are two-sided. Null results will be reported.
 
+## Name-signal validation lock
+
+The configured names are neutral experimental signals until they pass a separate validation stage.
+
+Before a live model run:
+
+1. screen first and last names with the complete 2020 Census name files;
+2. record first-name frequency by the preregistered birth-year range using SSA data;
+3. lock the intended perceived group and perceived gender for each name;
+4. collect approximately 100 to 200 perception ratings per name;
+5. apply the thresholds in `config/audit.yaml` without changing them after seeing results.
+
+The pretest measures perceived race or ethnicity, perceived gender, familiarity, socioeconomic impression, and classification confidence. Every configured name must receive `approved_for_live_audit = true` from `compas-validate-names` before a live run.
+
+The full procedure is in [`docs/name_signal_validation_protocol.md`](name_signal_validation_protocol.md).
+
 ## Design
 
 - 4 qualification-matched role templates
@@ -63,6 +79,8 @@ Failure rates are still reported by signal group and occupational tier.
 
 A detected coefficient is evidence about the specified model, prompt, date, and synthetic stimuli. It is not proof of unlawful discrimination, intent, employer behavior, or a person's actual protected identity.
 
+Name-based coefficients may be described using demographic language only when the name stimuli have passed the preregistered perception pretest. Otherwise, they remain `signal_a` through `signal_d`.
+
 ## Status
 
-The placebo validation is complete. The live-model confirmatory analysis has not been run in this repository as of July 23, 2026.
+The placebo validation is complete. The current names have not completed source screening or the perception pretest. The live-model confirmatory analysis has not been run in this repository as of July 23, 2026.
