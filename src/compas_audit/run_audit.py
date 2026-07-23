@@ -163,7 +163,11 @@ def run_experiment(config_path: str, provider_name: str, limit: int | None = Non
         if delay > 0:
             time.sleep(delay)
 
-    results = pd.DataFrame.from_records(records).sort_values("execution_order").reset_index(drop=True)
+    results = (
+        pd.DataFrame.from_records(records)
+        .sort_values("execution_order")
+        .reset_index(drop=True)
+    )
     if results["observation_id"].duplicated().any():
         raise RuntimeError("Duplicate observation IDs were generated.")
     return results
