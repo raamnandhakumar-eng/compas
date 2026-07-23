@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "compas-llm-audit"
+version = "0.1.0"
+description = "Synthetic audit of demographic and occupational bias in LLM resume screening"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Sriramkrishnan Nandhakumar"}]
+dependencies = [
+  "matplotlib>=3.8",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "pyyaml>=6.0",
+  "statsmodels>=0.14",
+]
+
+[project.optional-dependencies]
+api = ["anthropic>=0.40"]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.scripts]
+compas-generate = "compas_audit.generate:main"
+compas-run = "compas_audit.run_audit:main"
+compas-analyze = "compas_audit.analyze:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
