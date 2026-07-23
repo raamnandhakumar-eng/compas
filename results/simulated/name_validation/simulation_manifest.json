@@ -1,0 +1,11 @@
+{
+  "data_origin": "simulated_pipeline_test",
+  "simulation_seed": 20260723,
+  "panel_respondents": 120,
+  "response_rows": 960,
+  "valid_responses_per_name": 116,
+  "real_respondents": 0,
+  "eligible_for_live_audit": false,
+  "production_survey_file_modified": false,
+  "production_validation_outputs_modified": false
+}
