@@ -1,1 +1,18 @@
-x
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Completed placebo validation</title>
+  <desc id="desc">The audit completed 1,280 evaluations across 128 matched resumes with zero parser failures and zero mean coefficient recovery error to three decimal places.</desc>
+  <rect width="1200" height="360" fill="#ffffff"/>
+  <text x="600" y="52" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#152536">Completed placebo validation</text>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <text x="150" y="160" font-size="52" font-weight="700" fill="#152536">1,280</text>
+    <text x="150" y="198" font-size="18" fill="#4b5d6f">successful evaluations</text>
+    <text x="450" y="160" font-size="52" font-weight="700" fill="#152536">0</text>
+    <text x="450" y="198" font-size="18" fill="#4b5d6f">parser failures</text>
+    <text x="750" y="160" font-size="52" font-weight="700" fill="#152536">128</text>
+    <text x="750" y="198" font-size="18" fill="#4b5d6f">matched resumes</text>
+    <text x="1050" y="160" font-size="52" font-weight="700" fill="#152536">0.000</text>
+    <text x="1050" y="198" font-size="18" fill="#4b5d6f">mean recovery error</text>
+  </g>
+  <line x1="75" y1="240" x2="1125" y2="240" stroke="#d9e1e8" stroke-width="2"/>
+  <text x="600" y="292" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#5b6875">These results validate the software and estimator, not Claude or real hiring systems.</text>
+</svg>
