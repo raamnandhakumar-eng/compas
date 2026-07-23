@@ -1,4 +1,4 @@
-.PHONY: install test validate-names generate placebo analyze power figures reproduce live clean
+.PHONY: install test validate-names simulate-name-pretest generate placebo analyze power figures reproduce live clean
 
 install:
 	python -m pip install -e ".[dev]"
@@ -9,6 +9,9 @@ test:
 
 validate-names:
 	compas-validate-names --config config/audit.yaml
+
+simulate-name-pretest:
+	compas-simulate-name-pretest --config config/audit.yaml
 
 generate:
 	compas-generate --config config/audit.yaml
