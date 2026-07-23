@@ -6,6 +6,8 @@ import yaml
 from compas_audit.core_analysis import (
     PRIMARY_TERMS,
     core_model_formula,
+    failure_sensitivity,
+    fit_core_logistic_recommendation,
     placebo_recovery,
     prepare_core_data,
 )
@@ -46,7 +48,7 @@ def test_core_formula_contains_only_preregistered_treatments():
     }
 
 
-def test_core_data_preparation():
+def _prepared_frame(recommendations: tuple[int, int] = (1, 0)) -> pd.DataFrame:
     frame = pd.DataFrame(
         [
             {
@@ -58,7 +60,7 @@ def test_core_data_preparation():
                 "occupation_id": "o1",
                 "temperature": 0.0,
                 "fit_score": 7,
-                "recommend": 1,
+                "recommend": recommendations[0],
                 "confidence": 0.8,
                 "error": "",
             },
@@ -71,16 +73,27 @@ def test_core_data_preparation():
                 "occupation_id": "o2",
                 "temperature": 0.0,
                 "fit_score": 6,
-                "recommend": 0,
+                "recommend": recommendations[1],
                 "confidence": 0.7,
                 "error": "",
             },
         ]
     )
-    prepared = prepare_core_data(frame)
+    return prepare_core_data(frame)
+
+
+def test_core_data_preparation():
+    prepared = _prepared_frame()
     assert prepared["frontline"].tolist() == [1, 0]
     assert prepared["nontraditional"].tolist() == [0, 1]
     assert prepared["has_gap"].tolist() == [0, 1]
+
+
+def test_constant_recommendation_is_reported_not_estimable():
+    prepared = _prepared_frame(recommendations=(1, 1))
+    assert fit_core_logistic_recommendation(prepared) is None
+    sensitivity = failure_sensitivity(prepared)
+    assert sensitivity.empty
 
 
 def test_core_placebo_recovery_uses_only_core_terms():
