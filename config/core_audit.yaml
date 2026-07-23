@@ -1,0 +1,45 @@
+seed: 42
+trials_per_resume: 5
+temperatures: [0.0]
+output_resumes: outputs/core/resume_permutations.csv
+output_results: outputs/core/screening_results.csv
+output_manifest: outputs/core/run_manifest.json
+
+design:
+  study_track: core_gap_education
+  occupations: 8
+  base_profiles_per_occupation: 4
+  name_signal_groups: 1
+  career_gap_conditions: 2
+  education_conditions: 2
+  planned_resumes: 128
+  planned_evaluations: 640
+  stopping_rule: Run every randomized observation once; do not selectively rerun failures.
+
+provider:
+  model: set-via-ANTHROPIC_MODEL-before-live-run
+  api_version: anthropic-python
+  prompt_version: v1.0-locked
+  max_tokens: 500
+  request_delay_seconds: 0.0
+
+analysis:
+  cluster_column: resume_id
+  fdr_alpha: 0.05
+  leave_one_occupation_out: true
+
+name_validation:
+  required_for_live: false
+  rationale: Names are held fixed within matched sets and no name effect is estimated.
+
+signals:
+  names:
+    signal_control:
+      - Alex Morgan
+      - Taylor Jordan
+  education_pathway:
+    - traditional
+    - nontraditional
+  career_gap_months:
+    - 0
+    - 12
