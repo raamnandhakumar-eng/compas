@@ -1,4 +1,6 @@
-.PHONY: install test validate-names simulate-name-pretest generate placebo analyze power figures reproduce live clean
+.PHONY: install test validate-names simulate-name-pretest generate placebo analyze \
+	power figures reproduce live core-generate core-placebo core-analyze \
+	core-reproduce core-live select-balanced-names clean
 
 install:
 	python -m pip install -e ".[dev]"
@@ -34,5 +36,26 @@ reproduce:
 live:
 	bash scripts/run_live_audit.sh
 
+core-generate:
+	compas-generate --config config/core_audit.yaml
+
+core-placebo: core-generate
+	compas-run --config config/core_audit.yaml --provider mock
+
+core-analyze:
+	compas-analyze-core \
+		--input outputs/core/screening_results.csv \
+		--output-dir outputs/core/analysis
+
+core-reproduce:
+	bash scripts/reproduce_core_placebo.sh
+
+core-live:
+	bash scripts/run_core_live_audit.sh
+
+select-balanced-names:
+	compas-select-balanced-names \
+		--input results/name_validation/replacement_candidate_summary.csv
+
 clean:
-	rm -rf outputs/*.csv outputs/*.json outputs/analysis
+	rm -rf outputs/*.csv outputs/*.json outputs/analysis outputs/core
