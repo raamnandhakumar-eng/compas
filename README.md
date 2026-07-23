@@ -133,6 +133,12 @@ First, the export did not include consent or attention-check fields, so responde
 | Perceived socioeconomic status | 1.130 | 0.750 |
 | Unusualness | 1.713 | 0.750 |
 
+<p align="center">
+  <img src="assets/name_pretest_balance.svg" alt="Bar chart showing that familiarity, perceived socioeconomic status, and unusualness all exceed the preregistered 0.75 balance threshold" width="860">
+</p>
+
+<p align="center"><em>Figure 1. The first name pretest produced strong signal recognition but failed every locked balance check.</em></p>
+
 The project therefore does not relax the thresholds, relabel simulated responses as human evidence, publish participant-level data without documented permission, or proceed with an unapproved name experiment.
 
 Instead, the failed pretest is preserved as a genuine methodological result. It shows that strong demographic recognition is not sufficient: names must also be comparable on familiarity, perceived class, and unusualness.
