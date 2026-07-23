@@ -15,17 +15,47 @@ O*NET content is produced for the U.S. Department of Labor and is available unde
 
 ## Name signals
 
-The current names are experimental stimuli, not verified demographic identities. They are labeled `signal_a` through `signal_d` in the data and code. The repository does not infer a real person's race, ethnicity, nationality, religion, or gender from a name.
+The configured names are experimental stimuli, not verified demographic identities. They remain coded as `signal_a` through `signal_d` in the analysis.
 
-A live demographic interpretation requires a separate perception pretest with human raters. The pretest should measure:
+### Census name files
 
-- perceived group association;
+The primary source screen uses the complete 2020 Census name tables:
+
+- first names by race and Hispanic origin;
+- first names by sex;
+- last names by race and Hispanic origin.
+
+The files contain national aggregate counts for names reported at least 100 times. They do not identify individuals and cannot establish the identity of a person with a given name.
+
+Official source page:
+
+- https://www.census.gov/topics/population/genealogy/data/2020_names.html
+
+The 2010 surname product can be used as a historical check. It reports surname frequency and race or Hispanic-origin percentages:
+
+- https://www.census.gov/data/developers/data-sets/surnames.html
+
+### Social Security Administration first-name files
+
+SSA national baby-name files provide first-name counts by birth year. COMPAS uses them to check that a first name is common enough and plausible for the preregistered age cohort represented by the synthetic resume.
+
+- https://www.ssa.gov/oact/babynames/limits.html
+
+SSA suppresses names with fewer than five occurrences in a geographic file for privacy. The selected birth-year range must be locked before the survey or live audit.
+
+### Perception pretest
+
+Census and SSA associations are not enough to label a stimulus as a demographic signal. Before a live audit, approximately 100 to 200 respondents must rate each name on:
+
+- perceived race or ethnicity;
 - perceived gender;
 - familiarity;
-- socioeconomic connotation;
-- confidence in the perception.
+- socioeconomic impression;
+- confidence in the classification.
 
-The U.S. Census Bureau publishes aggregate surname frequency and race/ethnicity distributions for surnames appearing at least 100 times in the 2010 Census. That dataset can support stimulus screening but cannot establish an individual's identity: https://www.census.gov/topics/population/genealogy/data/2010_surnames.html
+Only names with strong agreement and acceptable familiarity and socioeconomic balance are approved. The full procedure and thresholds are in [`docs/name_signal_validation_protocol.md`](name_signal_validation_protocol.md).
+
+The current eight names are registered in `data/name_validation/name_candidates.csv` with validation status pending. Until the source fields and perception results are completed, they must be described only as neutral experimental name signals.
 
 ## Synthetic outcomes
 
