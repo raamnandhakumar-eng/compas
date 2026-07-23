@@ -104,7 +104,6 @@ def main() -> None:
     ssa = _ssa_counts(raw / "ssa_names.zip")
 
     first_count = _count_column(first_race)
-    first_sex_count = _count_column(first_sex)
     last_count = _count_column(last_race)
     male_column = _find_column(first_sex, ("male",))
 
@@ -156,7 +155,8 @@ def main() -> None:
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     registry = pd.DataFrame(rows)
-    if (registry[["census_first_count", "census_last_count", "ssa_frequency"]] < 100).any().any():
+    counts = registry[["census_first_count", "census_last_count", "ssa_frequency"]]
+    if (counts < 100).any().any():
         raise ValueError("A candidate name is too rare for the locked source-screen rule.")
     registry.to_csv(output, index=False)
     print(f"Wrote {output}")
