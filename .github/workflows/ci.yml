@@ -34,6 +34,14 @@ jobs:
       - run: pytest -q
       - run: python scripts/power_analysis.py
       - run: compas-validate-names --config config/audit.yaml
+      - run: compas-simulate-name-pretest --config config/audit.yaml
+      - name: Upload simulated perception-study data
+        uses: actions/upload-artifact@v4
+        with:
+          name: simulated-name-perception-study
+          path: |
+            data/simulated/name_validation/perception_responses_simulated.csv
+            results/simulated/name_validation/
       - run: compas-generate --config config/audit.yaml
       - run: compas-run --config config/audit.yaml --provider mock
       - run: compas-analyze --input outputs/screening_results.csv --output-dir outputs/analysis
