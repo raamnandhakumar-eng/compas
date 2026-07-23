@@ -29,7 +29,7 @@ def sha256_text(text: str) -> str:
 
 
 def extract_json_object(text: str) -> dict[str, Any]:
-    """Parse a JSON object, tolerating surrounding prose or fenced blocks."""
+    """Read a JSON object even when the model wraps it in a code fence or short note."""
     cleaned = text.strip()
     if cleaned.startswith("```"):
         lines = cleaned.splitlines()

@@ -1,4 +1,4 @@
-"""Generate the COMPAS experimental-design figure used in the README."""
+"""Build the experimental-design figure shown in the README."""
 
 from __future__ import annotations
 
@@ -39,7 +39,6 @@ def metric_card(
     value_color: str = "#15324B",
     subtitle_color: str = "#64748B",
 ) -> str:
-    """Return one rounded metric card as SVG markup."""
     subtitle = "".join(
         f'<tspan x="{x + width / 2}" dy="14">{line}</tspan>'
         for line in subtitle_lines
@@ -57,7 +56,6 @@ def metric_card(
 
 
 def build_svg() -> str:
-    """Build the complete SVG figure."""
     assert MATCHED_RESUMES == 128
     assert PLANNED_EVALUATIONS == 1280
 
@@ -217,7 +215,6 @@ def build_svg() -> str:
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--output",
@@ -229,7 +226,6 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
-    """Write the SVG figure to disk."""
     args = parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(build_svg(), encoding="utf-8")
