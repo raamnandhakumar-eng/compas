@@ -33,8 +33,8 @@ jobs:
           exit 1
       - run: pytest -q
       - run: python scripts/power_analysis.py
-      - run: compas-validate-names --config config/audit.yaml
-      - run: compas-simulate-name-pretest --config config/audit.yaml
+      - run: hiring-audit-validate-names --config config/audit.yaml
+      - run: hiring-audit-simulate-name-pretest --config config/audit.yaml
       - name: Upload simulated perception-study data
         uses: actions/upload-artifact@v4
         with:
@@ -44,16 +44,16 @@ jobs:
             results/simulated/name_validation/
       - name: Run full-design placebo
         run: |
-          compas-generate --config config/audit.yaml
-          compas-run --config config/audit.yaml --provider mock
-          compas-analyze \
+          hiring-audit-generate --config config/audit.yaml
+          hiring-audit-run --config config/audit.yaml --provider mock
+          hiring-audit-analyze \
             --input outputs/screening_results.csv \
             --output-dir outputs/analysis
       - name: Run core-design placebo
         run: |
-          compas-generate --config config/core_audit.yaml
-          compas-run --config config/core_audit.yaml --provider mock
-          compas-analyze-core \
+          hiring-audit-generate --config config/core_audit.yaml
+          hiring-audit-run --config config/core_audit.yaml --provider mock
+          hiring-audit-analyze-core \
             --input outputs/core/screening_results.csv \
             --output-dir outputs/core/analysis
       - run: python scripts/make_result_figures.py
