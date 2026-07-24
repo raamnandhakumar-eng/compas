@@ -16,6 +16,14 @@ design:
   planned_evaluations: 640
   stopping_rule: Run every randomized observation once; do not selectively rerun failures.
 
+external_preregistration:
+  required_for_live: true
+  url_env_var: EXTERNAL_PREREGISTRATION_URL
+  accepted_hosts:
+    - osf.io
+    - aspredicted.org
+  source_document: docs/osf_preregistration.md
+
 provider:
   model: set-via-ANTHROPIC_MODEL-before-live-run
   api_version: anthropic-python
