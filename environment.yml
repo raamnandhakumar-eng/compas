@@ -1,4 +1,4 @@
-name: compas-audit
+name: llm-hiring-bias-audit
 channels:
   - conda-forge
 dependencies:

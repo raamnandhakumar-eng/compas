@@ -1,89 +1,105 @@
-# COMPAS
+# LLM Hiring Bias Audit
 
-**Candidate Outcome Measurement and Prompt Audit Suite**
+**A preregistered matched-resume experiment on career gaps, education pathways, and occupational context**
 
-COMPAS is a reproducible audit of how a language model evaluates job candidates when their qualifications remain fixed but selected career signals change.
+This repository studies a narrow question: **when qualifications are held fixed, does a language model evaluate a candidate differently because the resume shows a 12-month career gap or a non-traditional education pathway?** It also tests whether those effects differ between frontline and knowledge-work occupations.
 
-The project focuses on three questions that matter for labor-market access:
+The design is intentionally controlled. Within each matched set, experience, skills, achievements, employer history, education level, target role, formatting, and resume length remain unchanged. Only the treatment signal changes.
 
-1. Does a 12-month career gap affect a model’s assessment of an otherwise identical candidate?
-2. Does a non-traditional education pathway affect that assessment?
-3. Do these effects differ between frontline and knowledge-work occupations?
+> **Current evidence:** the research pipeline and estimator have been validated with a deterministic mock provider. No live Claude findings are reported.
 
-A separate extension examines perceived name signals. That extension remains deliberately blocked until the name stimuli pass a new human validation study.
+## Why this question matters
 
-> **Important:** This repository is unrelated to the criminal-risk assessment system also called COMPAS. It currently reports pipeline-validation results only. No live Claude findings are presented.
+Career interruptions and non-traditional education are common among caregivers, career changers, returning workers, veterans, immigrants, and people who complete education through part-time or alternative routes. If AI systems are used to screen or rank applicants, even small shifts in scores or recommendations could affect who receives further consideration.
 
-## Why this project matters
+The occupational comparison matters because the same resume signal may be interpreted differently across labor-market settings. A career gap may carry one meaning in a frontline operations role and another in a knowledge-work role. The audit is designed to estimate that difference rather than assume it.
 
-Language models are increasingly used in tasks that resemble screening, ranking, and candidate evaluation. Even when a model is not the final decision-maker, small shifts in scores or recommendations can influence who receives further consideration.
+## Four-month fellowship scope
 
-Career interruptions and non-traditional education are especially important signals to study. They are common among caregivers, career changers, returning workers, veterans, immigrants, and people who complete education through part-time or alternative routes. These signals may also be interpreted differently across occupations. A career gap may carry one meaning in a frontline operations role and another in a knowledge-work role.
+The fellowship deliverable is the **core labor-market audit** only. It is sized to be completed, analyzed, written, and released within four months.
 
-COMPAS turns these questions into a controlled audit. Rather than comparing different applicants, it creates matched resumes in which experience, skills, achievements, employer history, education level, target role, formatting, and resume length are held constant. Only the treatment signal changes.
+| Deliverable | Scope | Status |
+|---|---|---|
+| External preregistration | Public OSF or AsPredicted timestamp before the first live request | Prepared; submission pending |
+| Core live audit | 128 matched resumes × 5 trials = 640 evaluations | Design locked; not run |
+| Confirmatory analysis | Fit score, interview recommendation, confidence, and occupational interactions | Code complete |
+| Robustness and diagnostics | Failures, refusals, repeated-call variance, logistic model when estimable, and treatment means | Code complete |
+| Public output | Reproducible dataset, analysis tables, figures, and a concise research paper | Planned within four months |
 
-## Study structure
+The following are **future research, not promised fellowship deliverables**:
 
-The project now has two explicitly separated research tracks.
+- a replacement name-perception study;
+- the 2,560-evaluation perceived-name-signal extension;
+- a human hiring-manager benchmark;
+- multi-model replication.
 
-| Track | Research question | Status | Planned scale |
-|---|---|---|---:|
-| Core labor-market audit | Career gap × education pathway × occupational context | Design locked and executable; live run not completed | 640 evaluations |
-| Name-signal extension | Validated perceived-name signals plus the core treatments | Blocked pending a successful replacement pretest | 2,560 evaluations |
+This scope decision was made before observing any live model output.
 
-This separation was made before any live model output was observed. It allows the independently identified career-gap and education-pathway questions to proceed without weakening the validation standard for the name-signal study.
+## External preregistration gate
+
+A repository preregistration is useful, but the live audit will also be registered externally. Ready-to-submit versions are included here:
+
+- [`docs/osf_preregistration.md`](docs/osf_preregistration.md)
+- [`docs/aspredicted_preregistration.md`](docs/aspredicted_preregistration.md)
+- [`docs/external_preregistration_checklist.md`](docs/external_preregistration_checklist.md)
+
+After the registration is submitted, its permanent URL must be supplied before the live runner will start:
+
+```bash
+export EXTERNAL_PREREGISTRATION_URL="https://osf.io/xxxxx"
+```
+
+The code accepts public OSF or AsPredicted URLs and refuses a live Anthropic run when the variable is missing or invalid. The resulting URL is also written into the run manifest.
 
 ## Current status
 
+- **Project name:** LLM Hiring Bias Audit
 - **Pipeline validation:** Complete
 - **Core audit design:** Locked and executable
+- **External preregistration:** Materials ready; external submission pending
 - **Core live audit:** Not run
-- **Name-source screening:** Complete
-- **First perception pretest:** Submitted but not approved
-- **Name-signal extension:** Blocked
-- **Human benchmark:** Not run
+- **First name-perception pretest:** Submitted but not approved
+- **Name-signal extension:** Blocked and outside the four-month scope
 
-The most important completed result is methodological: the software and estimator recover known effects under a deterministic mock provider. This validates the research pipeline, not the behavior of Claude, employers, or real hiring systems.
-
-## Core labor-market audit
+## Core experimental design
 
 The core audit estimates the effects of:
 
-- a 12-month career gap;
-- a traditional versus non-traditional education pathway;
-- the interaction between each treatment and occupational context.
+1. a 12-month career gap;
+2. a traditional versus non-traditional education pathway;
+3. career gap × frontline occupation;
+4. non-traditional education × frontline occupation.
 
 The design contains:
 
-- **8 occupations**: 4 frontline or operational and 4 knowledge-work roles;
+- **8 occupations:** 4 frontline or operational and 4 knowledge-work roles;
 - **4 base profiles per occupation**;
 - **32 matched base profiles**;
 - **2 career-gap conditions**;
 - **2 education-pathway conditions**;
 - **128 unique matched resumes**;
 - **5 repeated trials per resume**;
-- **640 planned evaluations**.
+- **640 planned evaluations**;
+- **1 exact model ID and 1 locked temperature**.
 
-A single control name is held fixed within each matched set. Names alternate across profile slots, but the core analysis does not estimate a name effect.
+A control name is held fixed within each matched set. The core analysis does not estimate a name effect.
 
-The full design is preregistered in [`docs/core_audit_preregistration.md`](docs/core_audit_preregistration.md).
+The full plan is in [`docs/core_audit_preregistration.md`](docs/core_audit_preregistration.md).
 
 ## Pipeline and estimator validation
 
-Before running a live model audit, the complete workflow was tested using a deterministic mock provider with known planted effects.
+Before any live model audit, the full workflow was tested with a deterministic mock provider containing known planted effects.
 
-The core placebo validation completed:
+The core placebo completed:
 
 - **640 of 640 evaluations**;
-- **0 failed evaluations**;
+- **0 failures**;
 - **0 refusals**;
 - **128 matched resumes**;
-- **32 base profiles**;
-- **8 occupations**;
 - randomized execution order;
 - no selective reruns.
 
-The pipeline recovered the planted fit-score effects exactly:
+The estimator recovered the planted fit-score effects exactly:
 
 | Treatment | Planted effect | Recovered effect |
 |---|---:|---:|
@@ -92,40 +108,15 @@ The pipeline recovered the planted fit-score effects exactly:
 | Career gap × frontline | 0.000 | 0.000 |
 | Non-traditional education × frontline | 0.000 | 0.000 |
 
-The mock recommendation outcome was constant, so the recommendation model was correctly reported as **not estimable** rather than interpreted from numerical noise.
+The mock recommendation outcome was constant, so the recommendation model was reported as **not estimable** rather than interpreted from numerical noise.
 
-See [`results/core/placebo_validation_report.md`](results/core/placebo_validation_report.md) for the full report.
+See [`results/core/placebo_validation_report.md`](results/core/placebo_validation_report.md).
 
-These results establish that the workflow can generate the matched design, randomize evaluations, preserve raw responses and failures, estimate the preregistered models, detect non-estimable outcomes, and recover known effects. They do not establish how a live model will respond.
+These results validate the software and estimator. They are not evidence about Claude, employers, or real applicants.
 
-## Name-signal extension
+## Name-signal extension: retained as future work
 
-The name-signal extension studies whether a model responds differently to validated perceived-name signals while qualifications remain unchanged.
-
-The names are treated as experimental stimuli, not as evidence of anyone’s actual race, ethnicity, gender, nationality, or socioeconomic status.
-
-Source screening uses public data from:
-
-- the 2020 U.S. Census first-name tables by race and Hispanic origin;
-- the 2020 Census first-name tables by sex;
-- the 2020 Census surname tables;
-- Social Security Administration national first-name frequencies.
-
-These are aggregate public records. They help assess whether a name is common enough and whether its broad population pattern supports inclusion in a perception study. They do not turn a name into an identity label.
-
-### What happened in the first pretest
-
-The submitted workbook contained **150 respondent IDs** and **1,200 complete ratings**. Every respondent rated all eight names, with no duplicate respondent-name pairs and no missing rating fields.
-
-The names were recognized strongly in the intended direction:
-
-- intended-group agreement ranged from **88.0% to 97.3%**;
-- perceived-male agreement ranged from **94.0% to 98.7%**;
-- median confidence was at least **4 out of 5** for every name.
-
-However, the pretest did not pass the locked protocol for two independent reasons.
-
-First, the export did not include consent or attention-check fields, so respondent eligibility could not be verified. Second, the names were not sufficiently balanced on other perceptions:
+A separate extension was designed to test validated perceived-name signals. The first human pretest contained **150 respondent IDs** and **1,200 complete ratings**. Signal recognition was strong, but the study did not pass the locked protocol.
 
 | Balance measure | Observed range | Maximum allowed |
 |---|---:|---:|
@@ -134,77 +125,43 @@ First, the export did not include consent or attention-check fields, so responde
 | Unusualness | 1.713 | 0.750 |
 
 <p align="center">
-  <img src="assets/name_pretest_balance.svg" alt="Bar chart showing that familiarity, perceived socioeconomic status, and unusualness all exceed the preregistered 0.75 balance threshold" width="860">
+  <img src="assets/name_pretest_balance.svg" alt="Bar chart showing that familiarity, perceived socioeconomic status, and unusualness exceed the preregistered balance threshold" width="860">
 </p>
 
-<p align="center"><em>Figure 1. The first name pretest produced strong signal recognition but failed every locked balance check.</em></p>
+<p align="center"><em>Figure 1. Strong signal recognition was not sufficient: all three locked balance checks failed.</em></p>
 
-The project therefore does not relax the thresholds, relabel simulated responses as human evidence, publish participant-level data without documented permission, or proceed with an unapproved name experiment.
-
-Instead, the failed pretest is preserved as a genuine methodological result. It shows that strong demographic recognition is not sufficient: names must also be comparable on familiarity, perceived class, and unusualness.
+The export also lacked consent and attention-check fields, so respondent eligibility could not be verified. The project therefore preserves the failed pretest, does not relax its thresholds, and does not run the name-signal experiment with unapproved stimuli.
 
 Aggregate results are available in:
 
 - [`results/name_validation/submitted_survey_name_summary.csv`](results/name_validation/submitted_survey_name_summary.csv)
 - [`results/name_validation/submitted_survey_balance_tests.csv`](results/name_validation/submitted_survey_balance_tests.csv)
 - [`results/name_validation/submitted_survey_validation_report.md`](results/name_validation/submitted_survey_validation_report.md)
-- [`data/name_validation/submitted_survey_manifest.csv`](data/name_validation/submitted_survey_manifest.csv)
 
-Raw participant-level responses are not published because public data-sharing permission was not documented.
+Names are treated as **perceived name signals**, not as evidence of anyone's actual identity.
 
-### Replacement-name procedure
+## Outcomes and analysis
 
-The recovery plan is described in [`docs/name_pretest_recovery_plan.md`](docs/name_pretest_recovery_plan.md).
+Primary outcomes:
 
-A future pilot will evaluate a larger pool of candidate names. The repository includes an exhaustive Python selector that searches all feasible two-name panels and minimizes the largest imbalance across familiarity, socioeconomic perception, and unusualness.
+1. fit score from 1 to 10;
+2. binary interview recommendation;
+3. model confidence from 0 to 1.
 
-```bash
-compas-select-balanced-names \
-  --input results/name_validation/replacement_candidate_summary.csv
-```
+The confirmatory analysis uses:
 
-The selector does not guarantee approval. It exits with failure when the best available panel still violates a locked threshold.
-
-## Outcomes and statistical analysis
-
-The primary outcomes are:
-
-1. fit score;
-2. interview recommendation;
-3. model confidence.
-
-The analysis uses:
-
-- matched-set fixed effects;
-- occupation fixed effects;
-- temperature fixed effects;
+- matched-set and occupation fixed effects;
 - standard errors clustered by matched resume;
-- Benjamini-Hochberg correction for multiple testing;
-- linear models for fit and confidence;
-- a linear probability model for recommendations;
-- logistic regression as a robustness check when estimable;
-- failure and refusal sensitivity analyses;
+- Benjamini-Hochberg correction across preregistered treatment terms;
+- linear models for fit score and confidence;
+- a linear probability model for recommendation;
+- logistic regression when the outcome has sufficient variation;
+- failure and refusal sensitivity checks;
 - treatment means and 95% confidence intervals.
 
-All failures and refusals remain in the raw data. The design prohibits selective reruns and records the exact model ID, API version, prompt version, temperature, trial number, latency, raw response, parser status, and error type.
+Every raw response, failure, refusal, prompt, exact model ID, timestamp, trial number, latency, parser status, and error type is retained. Selective reruns are prohibited.
 
-## Public data and occupational design
-
-The occupational sample is grounded in O*NET and Bureau of Labor Statistics fields stored in [`data/occupations/occupation_registry.csv`](data/occupations/occupation_registry.csv).
-
-The sample varies in occupational setting, employment size, wages, education requirements, and frontline versus knowledge-work classification. This variation supports analysis of whether the same candidate signal is interpreted differently across labor-market contexts.
-
-Public source files can be downloaded and rebuilt with:
-
-```bash
-python scripts/download_public_data.py
-python scripts/build_name_registry.py
-python scripts/build_occupation_registry.py
-```
-
-## Reproducing the project
-
-Create an environment and run the complete validation workflow:
+## Reproduce the validation pipeline
 
 ```bash
 python -m venv .venv
@@ -213,16 +170,19 @@ pip install -e ".[dev]"
 make reproduce
 ```
 
-Reproduce only the core placebo audit:
+Reproduce only the 640-evaluation core placebo:
 
 ```bash
 make core-reproduce
 ```
 
-Run the live core audit only after setting private credentials and locking one exact model ID:
+## Run the live core audit
+
+Submit the external preregistration first, then set all three required environment variables:
 
 ```bash
 pip install -e ".[api]"
+export EXTERNAL_PREREGISTRATION_URL="https://osf.io/xxxxx"
 export ANTHROPIC_API_KEY="..."
 export ANTHROPIC_MODEL="exact-model-id"
 make core-live
@@ -232,23 +192,27 @@ API credentials must never be committed to the repository.
 
 ## Repository guide
 
-- [`FELLOWSHIP_RESEARCH_BRIEF.md`](FELLOWSHIP_RESEARCH_BRIEF.md): concise overview of the research contribution
-- [`docs/core_audit_preregistration.md`](docs/core_audit_preregistration.md): locked core-audit design
-- [`docs/preregistration.md`](docs/preregistration.md): full name-signal design
-- [`docs/deviations_from_preregistration.md`](docs/deviations_from_preregistration.md): dated design changes
-- [`docs/name_pretest_recovery_plan.md`](docs/name_pretest_recovery_plan.md): replacement-name procedure
-- [`docs/limitations.md`](docs/limitations.md): interpretive limits
+- [`FELLOWSHIP_PROPOSAL.md`](FELLOWSHIP_PROPOSAL.md): four-month proposal in the author's research voice
+- [`FELLOWSHIP_RESEARCH_BRIEF.md`](FELLOWSHIP_RESEARCH_BRIEF.md): concise project summary
+- [`docs/core_audit_preregistration.md`](docs/core_audit_preregistration.md): locked core design
+- [`docs/osf_preregistration.md`](docs/osf_preregistration.md): OSF-ready registration text
+- [`docs/aspredicted_preregistration.md`](docs/aspredicted_preregistration.md): AsPredicted-ready answers
+- [`docs/deviations_from_preregistration.md`](docs/deviations_from_preregistration.md): dated design history
 - [`docs/ethics_statement.md`](docs/ethics_statement.md): ethical safeguards
-- [`docs/model_card.md`](docs/model_card.md): system and evaluation documentation
-- [`results/core/placebo_validation_report.md`](results/core/placebo_validation_report.md): core pipeline validation
+- [`docs/limitations.md`](docs/limitations.md): interpretive limits
+- [`docs/model_card.md`](docs/model_card.md): audit system documentation
+
+## Naming and compatibility
+
+The public project and Python distribution are named **LLM Hiring Bias Audit** and `llm-hiring-bias-audit`. New documentation uses `hiring-audit-*` command names.
+
+The internal import namespace remains `compas_audit`, and the old `compas-*` command aliases remain available, solely to preserve compatibility with validated historical scripts and commits. No public-facing acronym is used as the project identity.
 
 ## Interpretation and limits
 
-COMPAS is an audit of model behavior under a controlled synthetic design. It does not measure employer behavior, prove intent, establish unlawful discrimination, or identify the demographic identity of any individual.
+This is an audit of model behavior under a controlled synthetic design. It does not measure employer behavior, prove intent, establish unlawful discrimination, or identify the demographic identity of any person.
 
 Any live result will apply only to the exact model, prompt, run period, treatment definitions, and occupational sample used in the study. Results from eight occupations should not be generalized to the entire labor market.
-
-The project is intended to contribute evidence about workforce re-entry, credential alternatives, occupational mobility, and algorithmic gatekeeping. Its strongest commitment is methodological: preserve the design, report failures, and distinguish clearly between what the data show and what they do not.
 
 ## License
 

@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import pandas as pd
 
@@ -50,6 +52,37 @@ def validate_result(payload: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def assert_external_preregistration(config: dict[str, Any]) -> str:
+    settings = config.get("external_preregistration", {})
+    if not bool(settings.get("required_for_live", False)):
+        return ""
+
+    env_var = str(settings.get("url_env_var", "EXTERNAL_PREREGISTRATION_URL"))
+    registration_url = os.getenv(env_var, "").strip()
+    source_document = str(settings.get("source_document", "docs/osf_preregistration.md"))
+    if not registration_url:
+        raise RuntimeError(
+            f"A public OSF or AsPredicted preregistration is required before a live run. "
+            f"Submit {source_document}, then set {env_var} to its permanent URL."
+        )
+
+    parsed = urlparse(registration_url)
+    hostname = (parsed.hostname or "").casefold()
+    accepted_hosts = [
+        str(value).casefold()
+        for value in settings.get("accepted_hosts", ["osf.io", "aspredicted.org"])
+    ]
+    host_is_allowed = any(
+        hostname == allowed or hostname.endswith(f".{allowed}") for allowed in accepted_hosts
+    )
+    if parsed.scheme != "https" or not host_is_allowed:
+        allowed_text = ", ".join(accepted_hosts)
+        raise RuntimeError(
+            f"{env_var} must be a permanent HTTPS registration URL hosted by: {allowed_text}."
+        )
+    return registration_url
+
+
 def build_provider(name: str, model: str, seed: int) -> ScreeningProvider:
     if name == "mock":
         return MockProvider(seed=seed)
@@ -65,13 +98,15 @@ def _looks_like_refusal(raw_response: str) -> bool:
 
 def run_experiment(config_path: str, provider_name: str, limit: int | None = None) -> pd.DataFrame:
     config = load_config(config_path)
+    external_preregistration_url = ""
     if provider_name == "anthropic":
+        external_preregistration_url = assert_external_preregistration(config)
         assert_live_name_signals_validated(config)
 
     resumes_path = Path(config.get("output_resumes", "outputs/resume_permutations.csv"))
     if not resumes_path.exists():
         raise FileNotFoundError(
-            f"Resume permutations not found: {resumes_path}. Run compas-generate first."
+            f"Resume permutations not found: {resumes_path}. Run hiring-audit-generate first."
         )
 
     seed = int(config.get("seed", 42))
@@ -145,6 +180,7 @@ def run_experiment(config_path: str, provider_name: str, limit: int | None = Non
                 "timestamp_utc": timestamp.isoformat(),
                 "temperature": temperature,
                 "prompt_version": prompt_version,
+                "external_preregistration_url": external_preregistration_url,
                 "system_prompt": SYSTEM_PROMPT,
                 "user_prompt": user_prompt,
                 "trial_number": trial,
@@ -176,6 +212,11 @@ def run_experiment(config_path: str, provider_name: str, limit: int | None = Non
 def write_manifest(config_path: str, results: pd.DataFrame, output_path: Path) -> None:
     config_text = Path(config_path).read_text(encoding="utf-8")
     successful = int(results["error"].fillna("").eq("").sum())
+    preregistration_url = (
+        str(results["external_preregistration_url"].iloc[0])
+        if not results.empty and "external_preregistration_url" in results
+        else ""
+    )
     manifest = {
         "created_utc": datetime.now(timezone.utc).isoformat(),
         "config_sha256": sha256_text(config_text),
@@ -183,6 +224,8 @@ def write_manifest(config_path: str, results: pd.DataFrame, output_path: Path) -
         "exact_model_id": str(results["exact_model_id"].iloc[0]) if not results.empty else None,
         "api_version": str(results["api_version"].iloc[0]) if not results.empty else None,
         "prompt_version": str(results["prompt_version"].iloc[0]) if not results.empty else None,
+        "external_preregistration_url": preregistration_url,
+        "externally_preregistered": bool(preregistration_url),
         "rows": int(len(results)),
         "successful_rows": successful,
         "failed_rows": int(len(results) - successful),
@@ -207,7 +250,7 @@ def write_manifest(config_path: str, results: pd.DataFrame, output_path: Path) -
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run the synthetic LLM screening audit.")
+    parser = argparse.ArgumentParser(description="Run the synthetic LLM hiring audit.")
     parser.add_argument("--config", default="config/audit.yaml")
     parser.add_argument("--provider", choices=["mock", "anthropic"], default="mock")
     parser.add_argument(

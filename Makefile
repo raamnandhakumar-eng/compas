@@ -10,19 +10,19 @@ test:
 	pytest -q
 
 validate-names:
-	compas-validate-names --config config/audit.yaml
+	hiring-audit-validate-names --config config/audit.yaml
 
 simulate-name-pretest:
-	compas-simulate-name-pretest --config config/audit.yaml
+	hiring-audit-simulate-name-pretest --config config/audit.yaml
 
 generate:
-	compas-generate --config config/audit.yaml
+	hiring-audit-generate --config config/audit.yaml
 
 placebo: generate
-	compas-run --config config/audit.yaml --provider mock
+	hiring-audit-run --config config/audit.yaml --provider mock
 
 analyze:
-	compas-analyze --input outputs/screening_results.csv --output-dir outputs/analysis
+	hiring-audit-analyze --input outputs/screening_results.csv --output-dir outputs/analysis
 
 power:
 	python scripts/power_analysis.py
@@ -37,13 +37,13 @@ live:
 	bash scripts/run_live_audit.sh
 
 core-generate:
-	compas-generate --config config/core_audit.yaml
+	hiring-audit-generate --config config/core_audit.yaml
 
 core-placebo: core-generate
-	compas-run --config config/core_audit.yaml --provider mock
+	hiring-audit-run --config config/core_audit.yaml --provider mock
 
 core-analyze:
-	compas-analyze-core \
+	hiring-audit-analyze-core \
 		--input outputs/core/screening_results.csv \
 		--output-dir outputs/core/analysis
 
@@ -54,7 +54,7 @@ core-live:
 	bash scripts/run_core_live_audit.sh
 
 select-balanced-names:
-	compas-select-balanced-names \
+	hiring-audit-select-balanced-names \
 		--input results/name_validation/replacement_candidate_summary.csv
 
 clean:

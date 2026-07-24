@@ -27,9 +27,13 @@ def test_core_config_generates_complete_matched_design():
     assert resumes["signal_group"].eq("signal_control").all()
 
 
-def test_core_live_run_does_not_require_name_pretest():
+def test_core_live_run_requires_external_registration_but_not_name_pretest():
     config = yaml.safe_load(Path("config/core_audit.yaml").read_text(encoding="utf-8"))
     assert config["name_validation"]["required_for_live"] is False
+    assert config["external_preregistration"]["required_for_live"] is True
+    assert config["external_preregistration"]["url_env_var"] == (
+        "EXTERNAL_PREREGISTRATION_URL"
+    )
     assert config["design"]["planned_resumes"] == 128
     assert config["design"]["planned_evaluations"] == 640
 
